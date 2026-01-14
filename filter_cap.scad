@@ -107,27 +107,11 @@ module top_grid() {
     }
 }
 
-// Filter support ledges
-module filter_ledges() {
-    ledge_width = 8;
-    ledge_thickness = 3;
-    ledge_length = interior_width - 30;
-    ledge_z = skirt_height + ledge_thickness/2;
-
-    // Four ledges around perimeter
-    for (angle = [0, 90, 180, 270]) {
-        rotate([0, 0, angle])
-            translate([0, interior_depth/2 - ledge_width/2 - 5, ledge_z])
-                cube([ledge_length, ledge_width, ledge_thickness], center = true);
-    }
-}
-
 // Complete filter cap
 module filter_cap() {
     union() {
         main_body();
         top_grid();
-        filter_ledges();
     }
 }
 
