@@ -25,6 +25,7 @@ grid_holes_y = 8; // number of holes in Y direction
 /* [Base Interface] */
 // Must match fan_base.scad
 base_width = 310; // mm
+base_height = 30; // mm - fan base plate thickness
 lip_height = 10; // mm
 lip_thickness = 4; // mm
 interface_gap = 0.5; // mm - clearance for fit
@@ -36,7 +37,10 @@ total_filter_height = (filter_height * num_filters) + filter_clearance;
 
 exterior_width = interior_width + (2 * wall_thickness);
 exterior_depth = interior_depth + (2 * wall_thickness);
-cap_height = total_filter_height + 3 + 5; // ledge + space above filters
+
+// Cap height = 2 filters + fan base height + clearance
+fan_base_total_height = base_height + lip_height; // 40mm
+cap_height = total_filter_height + fan_base_total_height + 5; // filters + base + clearance
 
 // Interface skirt dimensions (fits over fan base lip)
 skirt_interior = base_width - (2 * lip_thickness) + interface_gap;
