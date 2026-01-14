@@ -1,8 +1,8 @@
 // Film Dryer Filter Cap
 // Holds 2x 12x12x1 furnace filters (11.75" x 11.75" x 0.75" actual)
-// Filters slide in from the top, rest on support ledges
 // Open top with protective grid for air intake
 // Interior cutout goes all the way through
+// Rounded top edges with 4mm radius
 // Designed to fit Bambu Labs H2D (max 350x320x325mm)
 
 /* [Filter Specifications] */
@@ -16,6 +16,7 @@ filter_clearance = 2; // mm - gap around filters for easy insertion
 /* [Frame Dimensions] */
 wall_thickness = 5; // mm
 frame_height = 15; // mm - height of top frame/grid
+top_radius = 4; // mm - radius for top edge rounding
 
 /* [Grid Specifications] */
 grid_bar_width = 4; // mm - thinner bars
@@ -51,71 +52,76 @@ skirt_outer = skirt_interior + (2 * skirt_wall);
 // Total height of entire object
 total_height = cap_height + skirt_height;
 
+// Grid calculations
+usable_width = interior_width - 20;
+usable_depth = interior_depth - 20;
+hole_width = (usable_width - (grid_holes_x + 1) * grid_bar_width) / grid_holes_x;
+hole_depth = (usable_depth - (grid_holes_y + 1) * grid_bar_width) / grid_holes_y;
+
 $fn = 32;
 
-// Main body - outer walls with interior cutout going all the way through
-module main_body() {
+// Rounded rectangle module for 2D shape
+module rounded_rect(w, h, r) {
+    offset(r = r) offset(r = -r)
+        square([w, h], center = true);
+}
+
+// Edge rounding - subtracts material to create rounded edges
+module round_top_edges(width, depth, radius) {
+    difference() {
+        translate([0, 0, -radius])
+            cube([width + 2, depth + 2, radius * 2], center = true);
+        minkowski() {
+            cube([width - 2*radius, depth - 2*radius, 0.01], center = true);
+            cylinder(r = radius, h = 0.01);
+        }
+    }
+}
+
+// Grid hole cutouts
+module grid_holes() {
+    start_x = -usable_width/2 + grid_bar_width + hole_width/2;
+    start_y = -usable_depth/2 + grid_bar_width + hole_depth/2;
+    step_x = hole_width + grid_bar_width;
+    step_y = hole_depth + grid_bar_width;
+
+    for (ix = [0:grid_holes_x-1]) {
+        for (iy = [0:grid_holes_y-1]) {
+            translate([start_x + ix * step_x, start_y + iy * step_y, 0])
+                linear_extrude(frame_height + top_radius + 2)
+                    square([hole_width, hole_depth], center = true);
+        }
+    }
+}
+
+// Complete filter cap - all in one difference operation
+module filter_cap() {
+    grid_z = skirt_height + cap_height - frame_height;
+
     difference() {
         union() {
             // Main cap body
             translate([0, 0, skirt_height])
                 linear_extrude(cap_height)
-                    offset(r = 3) offset(r = -3)
-                        square([exterior_width, exterior_depth], center = true);
+                    rounded_rect(exterior_width, exterior_depth, 3);
 
             // Skirt at bottom
             linear_extrude(skirt_height)
-                offset(r = 3) offset(r = -3)
-                    square([skirt_outer, skirt_outer], center = true);
+                rounded_rect(skirt_outer, skirt_outer, 3);
         }
 
-        // Interior cutout - goes ALL THE WAY through from bottom to top
+        // Interior cutout - stops below the grid section
         translate([0, 0, -1])
-            linear_extrude(total_height + 2)
+            linear_extrude(grid_z + 1)
                 square([interior_width - 10, interior_depth - 10], center = true);
-    }
-}
 
-// Top grid with many smaller holes
-module top_grid() {
-    grid_z = skirt_height + cap_height - frame_height;
+        // Grid holes in top section
+        translate([0, 0, grid_z - 1])
+            grid_holes();
 
-    // Calculate hole sizes based on count
-    usable_width = interior_width - 20; // Leave margin
-    usable_depth = interior_depth - 20;
-
-    hole_width = (usable_width - (grid_holes_x + 1) * grid_bar_width) / grid_holes_x;
-    hole_depth = (usable_depth - (grid_holes_y + 1) * grid_bar_width) / grid_holes_y;
-
-    translate([0, 0, grid_z]) {
-        difference() {
-            // Solid top frame
-            linear_extrude(frame_height)
-                offset(r = 3) offset(r = -3)
-                    square([exterior_width, exterior_depth], center = true);
-
-            // Cut grid holes
-            start_x = -usable_width/2 + grid_bar_width + hole_width/2;
-            start_y = -usable_depth/2 + grid_bar_width + hole_depth/2;
-            step_x = hole_width + grid_bar_width;
-            step_y = hole_depth + grid_bar_width;
-
-            for (ix = [0:grid_holes_x-1]) {
-                for (iy = [0:grid_holes_y-1]) {
-                    translate([start_x + ix * step_x, start_y + iy * step_y, -1])
-                        linear_extrude(frame_height + 2)
-                            square([hole_width, hole_depth], center = true);
-                }
-            }
-        }
-    }
-}
-
-// Complete filter cap
-module filter_cap() {
-    union() {
-        main_body();
-        top_grid();
+        // Round the top outer edges
+        translate([0, 0, total_height])
+            round_top_edges(exterior_width, exterior_depth, top_radius);
     }
 }
 
@@ -129,6 +135,7 @@ echo(str("Interior cutout: ", interior_width - 10, " x ", interior_depth - 10, "
 echo(str("Cap height: ", cap_height, " mm"));
 echo(str("Skirt height: ", skirt_height, " mm"));
 echo(str("Total height: ", total_height, " mm"));
+echo(str("Top edge radius: ", top_radius, " mm"));
 echo(str("Grid: ", grid_holes_x, " x ", grid_holes_y, " holes"));
 echo("");
 echo("=== BUILD CHECK (H2D: 350x320x325) ===");
