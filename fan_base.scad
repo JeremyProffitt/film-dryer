@@ -106,24 +106,21 @@ module all_mounting_holes() {
 // Raised lip for cap interface
 module cap_lip() {
     difference() {
-        // Outer rim
+        // Outer rim - square corners
         linear_extrude(lip_height)
-            offset(r = 3) offset(r = -3)
-                square([base_width, base_depth], center = true);
+            square([base_width, base_depth], center = true);
 
-        // Inner cutout
+        // Inner cutout - square corners
         translate([0, 0, -1])
             linear_extrude(lip_height + 2)
-                offset(r = 3) offset(r = -3)
-                    square([base_width - 2*lip_thickness, base_depth - 2*lip_thickness], center = true);
+                square([base_width - 2*lip_thickness, base_depth - 2*lip_thickness], center = true);
     }
 }
 
-// Main base plate
+// Main base plate - square corners
 module base_plate() {
     linear_extrude(base_height)
-        offset(r = 3) offset(r = -3)
-            square([base_width, base_depth], center = true);
+        square([base_width, base_depth], center = true);
 }
 
 // Complete fan base
