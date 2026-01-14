@@ -22,6 +22,7 @@ top_radius = 4; // mm - radius for top edge rounding
 grid_bar_width = 4; // mm - thinner bars
 grid_holes_x = 8; // number of holes in X direction
 grid_holes_y = 8; // number of holes in Y direction
+grid_hole_radius = 4; // mm - radius for grid hole corners
 
 /* [Base Interface] */
 // Must match fan_base.scad
@@ -58,6 +59,9 @@ usable_depth = interior_depth - 20;
 hole_width = (usable_width - (grid_holes_x + 1) * grid_bar_width) / grid_holes_x;
 hole_depth = (usable_depth - (grid_holes_y + 1) * grid_bar_width) / grid_holes_y;
 
+// Z position where grid starts
+grid_z = skirt_height + cap_height - frame_height;
+
 $fn = 32;
 
 // Rounded rectangle module for 2D shape
@@ -66,64 +70,62 @@ module rounded_rect(w, h, r) {
         square([w, h], center = true);
 }
 
-// Edge rounding - subtracts material to create rounded edges
-module round_top_edges(width, depth, radius) {
-    difference() {
-        translate([0, 0, -radius])
-            cube([width + 2, depth + 2, radius * 2], center = true);
-        minkowski() {
-            cube([width - 2*radius, depth - 2*radius, 0.01], center = true);
-            cylinder(r = radius, h = 0.01);
-        }
-    }
-}
-
 // Grid hole cutouts with rounded corners
 module grid_holes() {
     start_x = -usable_width/2 + grid_bar_width + hole_width/2;
     start_y = -usable_depth/2 + grid_bar_width + hole_depth/2;
     step_x = hole_width + grid_bar_width;
     step_y = hole_depth + grid_bar_width;
-    hole_radius = 4; // mm - radius for grid hole corners
 
     for (ix = [0:grid_holes_x-1]) {
         for (iy = [0:grid_holes_y-1]) {
-            translate([start_x + ix * step_x, start_y + iy * step_y, 0])
-                linear_extrude(frame_height + top_radius + 2)
-                    offset(r = hole_radius) offset(r = -hole_radius)
+            translate([start_x + ix * step_x, start_y + iy * step_y, grid_z - 1])
+                linear_extrude(frame_height + top_radius + 10)
+                    offset(r = grid_hole_radius) offset(r = -grid_hole_radius)
                         square([hole_width, hole_depth], center = true);
         }
     }
 }
 
-// Complete filter cap - all in one difference operation
+// Complete filter cap with rounded top edges
 module filter_cap() {
-    grid_z = skirt_height + cap_height - frame_height;
-
     difference() {
-        union() {
-            // Main cap body
-            translate([0, 0, skirt_height])
-                linear_extrude(cap_height)
-                    rounded_rect(exterior_width, exterior_depth, 3);
+        // Main solid body
+        minkowski() {
+            union() {
+                // Main cap body - reduced size for minkowski
+                translate([0, 0, skirt_height])
+                    linear_extrude(cap_height - top_radius)
+                        rounded_rect(exterior_width - 2*top_radius, exterior_depth - 2*top_radius, 3);
 
-            // Skirt at bottom
-            linear_extrude(skirt_height)
-                rounded_rect(skirt_outer, skirt_outer, 3);
+                // Skirt at bottom - no rounding needed
+                linear_extrude(skirt_height)
+                    rounded_rect(skirt_outer, skirt_outer, 3);
+            }
+
+            // Add rounding sphere - but only affects top due to positioning
+            sphere(r = top_radius);
+        }
+
+        // Cut off the bottom expansion from minkowski
+        translate([0, 0, -top_radius - 1])
+            cube([exterior_width + 20, exterior_depth + 20, top_radius * 2 + 2], center = true);
+
+        // Cut off side expansion from minkowski on skirt
+        difference() {
+            translate([0, 0, skirt_height/2])
+                cube([exterior_width + 20, exterior_depth + 20, skirt_height + 2], center = true);
+            translate([0, 0, skirt_height/2])
+                cube([skirt_outer, skirt_outer, skirt_height + 4], center = true);
         }
 
         // Interior cutout - stops below the grid section
         translate([0, 0, -1])
-            linear_extrude(grid_z + 1)
+            linear_extrude(grid_z + 2)
                 square([interior_width - 10, interior_depth - 10], center = true);
 
         // Grid holes in top section
-        translate([0, 0, grid_z - 1])
-            grid_holes();
-
-        // Round the top outer edges
-        translate([0, 0, total_height])
-            round_top_edges(exterior_width, exterior_depth, top_radius);
+        grid_holes();
     }
 }
 
@@ -133,7 +135,7 @@ filter_cap();
 // Debug output
 echo("=== FILTER CAP DIMENSIONS ===");
 echo(str("Exterior: ", exterior_width, " x ", exterior_depth, " mm"));
-echo(str("Interior cutout: ", interior_width - 10, " x ", interior_depth - 10, " mm (through entire height)"));
+echo(str("Interior cutout: ", interior_width - 10, " x ", interior_depth - 10, " mm"));
 echo(str("Cap height: ", cap_height, " mm"));
 echo(str("Skirt height: ", skirt_height, " mm"));
 echo(str("Total height: ", total_height, " mm"));
