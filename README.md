@@ -21,11 +21,17 @@ A 3D printable filtered air system for film drying boxes. Designed to fit on the
 |-----------|-------|------|-----|
 | ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_isometric.png) | ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_front.png) | ![Back](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_back.png) | ![Top](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_top.png) |
 
+### Inside Mount
+| Isometric | Front | Back | Top |
+|-----------|-------|------|-----|
+| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_isometric.png) | ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_front.png) | ![Back](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_back.png) | ![Top](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_top.png) |
+
 ## Overview
 
-This system consists of two pieces:
+This system consists of three pieces:
 1. **Fan Base** (`fan_base.scad`) - Mounts 4x 80mm computer fans with flanges to attach to a box
 2. **Filter Cap** (`filter_cap.scad`) - Holds 2x 12x12x1" furnace filters stacked vertically
+3. **Inside Mount** (`inside_mount.scad`) - Interior mounting plate with matching screw pattern
 
 ## Specifications
 
@@ -52,6 +58,7 @@ This system consists of two pieces:
 |------|--------------|
 | Fan Base | [fan_base.stl](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base.stl) |
 | Filter Cap | [filter_cap.stl](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap.stl) |
+| Inside Mount | [inside_mount.stl](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount.stl) |
 
 ## Files
 
@@ -59,6 +66,7 @@ This system consists of two pieces:
 |------|-------------|-------------|
 | `fan_base.scad` | Fan mounting base with flanges | ✓ Yes |
 | `filter_cap.scad` | Filter holder cap | ✓ Yes |
+| `inside_mount.scad` | Interior mounting plate | ✓ Yes |
 | `assembly.scad` | Assembly visualization | No (view only) |
 
 ## Printing Instructions
