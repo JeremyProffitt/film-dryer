@@ -78,15 +78,28 @@ module corner_mounting_hole() {
         cylinder(h = mounting_head_depth + 1, d = mounting_head_diameter);
 }
 
-// All 4 corner mounting holes
-module corner_mounting_holes() {
-    hole_pos = base_width/2 - corner_inset;
+// All mounting holes - corners and side midpoints
+module all_mounting_holes() {
+    hole_offset = base_width/2 - corner_inset;
 
+    // 4 corner holes
     for (x = [-1, 1]) {
         for (y = [-1, 1]) {
-            translate([x * hole_pos, y * hole_pos, 0])
+            translate([x * hole_offset, y * hole_offset, 0])
                 corner_mounting_hole();
         }
+    }
+
+    // 4 side middle holes (same offset from edge)
+    // Top and bottom sides
+    for (y = [-1, 1]) {
+        translate([0, y * hole_offset, 0])
+            corner_mounting_hole();
+    }
+    // Left and right sides
+    for (x = [-1, 1]) {
+        translate([x * hole_offset, 0, 0])
+            corner_mounting_hole();
     }
 }
 
@@ -120,7 +133,7 @@ module fan_base() {
         difference() {
             base_plate();
             all_fan_cutouts();
-            corner_mounting_holes();
+            all_mounting_holes();
         }
 
         // Lip on top
@@ -138,5 +151,5 @@ echo(str("Base: ", base_width, " x ", base_depth, " x ", base_height, " mm"));
 echo(str("Total height with lip: ", base_height + lip_height, " mm"));
 echo(str("Fan recess: ", fan_recess_size, " x ", fan_recess_size, " mm square (sharp corners)"));
 echo(str("Fan recess depth: ", recess_depth, " mm (", base_height - recess_depth, " mm base remaining)"));
-echo(str("Corner mounting holes: ", corner_inset, " mm (1 inch) from corners"));
+echo(str("Mounting holes: 8 total (4 corners + 4 side midpoints), ", corner_inset, " mm from edges"));
 echo(str("Mounting hole: ", mounting_hole_diameter, " mm shaft, ", mounting_head_diameter, " mm head recess"));
