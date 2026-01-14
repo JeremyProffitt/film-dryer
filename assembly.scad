@@ -87,11 +87,10 @@ module fan_base_visual() {
             for (x = [-1, 1]) {
                 for (y = [-1, 1]) {
                     translate([x * fan_offset, y * fan_offset, 0]) {
-                        // Deep recess
+                        // Deep square recess (85x85mm, sharp corners)
                         translate([0, 0, base_height - recess_depth])
                             linear_extrude(recess_depth + 1)
-                                offset(r = 5) offset(r = -5)
-                                    square([82, 82], center = true);
+                                square([85, 85], center = true);
                         // Through hole
                         cylinder(h = base_height * 3, d = fan_opening, center = true);
                     }

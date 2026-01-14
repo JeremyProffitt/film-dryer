@@ -19,7 +19,7 @@ fan_gap = 8; // mm - gap between fans
 /* [Fan Recess] */
 // Recess depth = base_height - 5mm (fans sit deep, only 5mm of base below)
 recess_depth = base_height - 5; // 25mm deep
-recess_clearance = 1; // mm - extra space around fan
+fan_recess_size = 85; // mm - 85x85mm square cutout for 80mm fans with gap
 
 /* [Corner Mounting Holes] */
 corner_inset = 25.4; // mm - 1 inch from corner
@@ -33,19 +33,17 @@ lip_height = 10; // mm - raised rim for cap to fit over
 lip_thickness = 4; // mm
 
 /* [Calculated] */
-fan_recess_size = fan_size + (2 * recess_clearance);
 fan_offset = (fan_size + fan_gap) / 2;
 
 $fn = 48;
 
 // Single fan mount with deep recess and screw holes
 module fan_cutout() {
-    // Deep recess for fan body (from top, going down)
+    // Deep square recess for fan body (from top, going down)
+    // 85x85mm square with sharp corners
     translate([0, 0, base_height - recess_depth])
         linear_extrude(recess_depth + 1)
-            offset(r = fan_corner_radius)
-                offset(r = -fan_corner_radius)
-                    square([fan_recess_size, fan_recess_size], center = true);
+            square([fan_recess_size, fan_recess_size], center = true);
 
     // Through hole for airflow (all the way through remaining 5mm)
     cylinder(h = base_height * 3, d = fan_opening_diameter, center = true);
@@ -138,7 +136,7 @@ fan_base();
 echo("=== FAN BASE DIMENSIONS ===");
 echo(str("Base: ", base_width, " x ", base_depth, " x ", base_height, " mm"));
 echo(str("Total height with lip: ", base_height + lip_height, " mm"));
+echo(str("Fan recess: ", fan_recess_size, " x ", fan_recess_size, " mm square (sharp corners)"));
 echo(str("Fan recess depth: ", recess_depth, " mm (", base_height - recess_depth, " mm base remaining)"));
-echo(str("Fan recess size: ", fan_recess_size, " x ", fan_recess_size, " mm"));
 echo(str("Corner mounting holes: ", corner_inset, " mm (1 inch) from corners"));
 echo(str("Mounting hole: ", mounting_hole_diameter, " mm shaft, ", mounting_head_diameter, " mm head recess"));
