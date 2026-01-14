@@ -1,155 +1,192 @@
 // Film Dryer Filter Cap
-// Holds 2x 12x12x1 furnace filters (actual 11.75x11.75x0.75 inches)
-// Fits over fan base assembly
+// Holds 2x 12x12x1 furnace filters (11.75" x 11.75" x 0.75" actual)
+// Filters slide in from the top, rest on support ledges
+// Open top with protective frame for air intake
 // Designed to fit Bambu Labs H2D (max 350x320x325mm)
 
 /* [Filter Specifications] */
-// Actual filter dimensions (11.75 x 11.75 x 0.75 inches)
-filter_width = 298.45; // mm (11.75 inches)
-filter_depth = 298.45; // mm (11.75 inches)
+// Actual filter size: 11.75" x 11.75" x 0.75"
+filter_width = 298.45; // mm
+filter_depth = 298.45; // mm
 filter_height = 19.05; // mm (0.75 inches)
-num_filters = 2; // Stacked vertically
-filter_tolerance = 1.5; // mm - extra space for easy filter insertion
+num_filters = 2; // stacked vertically
+filter_clearance = 2; // mm - gap around filters for easy insertion
 
-/* [Cap Dimensions] */
-wall_thickness = 3; // mm
-top_frame_width = 15; // mm - width of frame around top opening
+/* [Frame Dimensions] */
+wall_thickness = 5; // mm
+frame_bar_width = 15; // mm - width of top frame bars
+corner_post_size = 20; // mm - size of corner structural posts
+
+/* [Support Ledges] */
+ledge_width = 8; // mm - how far ledge extends into frame
+ledge_thickness = 3; // mm
 
 /* [Base Interface] */
-// Must match fan_base.scad dimensions
-base_size = 310; // mm - matches fan base
-lip_inset = 5; // mm - matches fan base lip inset
-lip_height = 8; // mm - matches fan base lip height
-interface_tolerance = 0.5; // mm - gap for easy fit
+// Must match fan_base.scad
+base_width = 310; // mm
+lip_height = 10; // mm
+lip_thickness = 4; // mm
+interface_gap = 0.5; // mm - clearance for fit
 
-/* [Grill Specifications] */
-grill_bar_width = 3; // mm
-grill_spacing = 20; // mm - space between bars
+/* [Calculated] */
+interior_width = filter_width + filter_clearance;
+interior_depth = filter_depth + filter_clearance;
+total_filter_height = (filter_height * num_filters) + filter_clearance;
 
-/* [Calculated Values] */
-// Interior dimensions for filters
-interior_width = filter_width + filter_tolerance;
-interior_depth = filter_depth + filter_tolerance;
-interior_height = (filter_height * num_filters) + filter_tolerance;
-
-// Exterior dimensions
 exterior_width = interior_width + (2 * wall_thickness);
 exterior_depth = interior_depth + (2 * wall_thickness);
-cap_height = interior_height + wall_thickness + top_frame_width;
+cap_height = total_filter_height + ledge_thickness + 5; // 5mm above filters
 
-// Interface dimensions (fits over fan base lip)
-interface_width = base_size - (2 * lip_inset) + interface_tolerance;
-interface_depth = base_size - (2 * lip_inset) + interface_tolerance;
-interface_height = lip_height + 2; // Overlap onto lip
+// Interface skirt dimensions (fits over fan base lip)
+skirt_interior = base_width - (2 * lip_thickness) + interface_gap;
+skirt_height = lip_height + 5;
 
-module top_grill() {
-    // Protective grill over the top opening
-    // Bars in X direction
-    num_bars_x = floor(interior_width / grill_spacing);
-    for (i = [1:num_bars_x-1]) {
-        translate([wall_thickness + (i * grill_spacing) - grill_bar_width/2,
-                   wall_thickness,
-                   cap_height - top_frame_width])
-            cube([grill_bar_width, interior_depth, top_frame_width]);
-    }
-
-    // Bars in Y direction
-    num_bars_y = floor(interior_depth / grill_spacing);
-    for (i = [1:num_bars_y-1]) {
-        translate([wall_thickness,
-                   wall_thickness + (i * grill_spacing) - grill_bar_width/2,
-                   cap_height - top_frame_width])
-            cube([interior_width, grill_bar_width, top_frame_width]);
-    }
+module corner_post(height) {
+    cube([corner_post_size, corner_post_size, height]);
 }
 
-module filter_support_ledge() {
-    // Small ledge inside to support bottom filter
-    ledge_width = 5;
-    ledge_height = 2;
+// Four corner posts
+module corner_posts() {
+    // Front-left
+    translate([-exterior_width/2, -exterior_depth/2, 0])
+        corner_post(cap_height);
+
+    // Front-right
+    translate([exterior_width/2 - corner_post_size, -exterior_depth/2, 0])
+        corner_post(cap_height);
+
+    // Back-left
+    translate([-exterior_width/2, exterior_depth/2 - corner_post_size, 0])
+        corner_post(cap_height);
+
+    // Back-right
+    translate([exterior_width/2 - corner_post_size, exterior_depth/2 - corner_post_size, 0])
+        corner_post(cap_height);
+}
+
+// Walls between corner posts
+module side_walls() {
+    wall_length = exterior_width - (2 * corner_post_size);
+
+    // Front wall
+    translate([-wall_length/2, -exterior_depth/2, 0])
+        cube([wall_length, wall_thickness, cap_height]);
+
+    // Back wall
+    translate([-wall_length/2, exterior_depth/2 - wall_thickness, 0])
+        cube([wall_length, wall_thickness, cap_height]);
+
+    // Left wall
+    translate([-exterior_width/2, -wall_length/2, 0])
+        cube([wall_thickness, wall_length, cap_height]);
+
+    // Right wall
+    translate([exterior_width/2 - wall_thickness, -wall_length/2, 0])
+        cube([wall_thickness, wall_length, cap_height]);
+}
+
+// Filter support ledges (filters rest on these)
+module filter_ledges() {
+    ledge_length = interior_width - 20; // Leave gaps at corners
+
+    // Bottom ledge for first filter (at bottom of interior)
+    z_bottom = ledge_thickness;
 
     // Front ledge
-    translate([wall_thickness, wall_thickness, wall_thickness])
-        cube([interior_width, ledge_width, ledge_height]);
+    translate([-ledge_length/2, -interior_depth/2, 0])
+        cube([ledge_length, ledge_width, z_bottom]);
 
     // Back ledge
-    translate([wall_thickness, exterior_depth - wall_thickness - ledge_width, wall_thickness])
-        cube([interior_width, ledge_width, ledge_height]);
+    translate([-ledge_length/2, interior_depth/2 - ledge_width, 0])
+        cube([ledge_length, ledge_width, z_bottom]);
 
     // Left ledge
-    translate([wall_thickness, wall_thickness, wall_thickness])
-        cube([ledge_width, interior_depth, ledge_height]);
+    translate([-interior_width/2, -ledge_length/2, 0])
+        cube([ledge_width, ledge_length, z_bottom]);
 
     // Right ledge
-    translate([exterior_width - wall_thickness - ledge_width, wall_thickness, wall_thickness])
-        cube([ledge_width, interior_depth, ledge_height]);
+    translate([interior_width/2 - ledge_width, -ledge_length/2, 0])
+        cube([ledge_width, ledge_length, z_bottom]);
 }
 
-module cap_body() {
+// Top frame (protective bars across the open top)
+module top_frame() {
+    z_top = cap_height - frame_bar_width;
+
+    // Perimeter frame
     difference() {
-        // Main box
-        cube([exterior_width, exterior_depth, cap_height]);
+        translate([0, 0, z_top + frame_bar_width/2])
+            cube([exterior_width, exterior_depth, frame_bar_width], center = true);
 
-        // Hollow interior for filters
-        translate([wall_thickness, wall_thickness, wall_thickness])
-            cube([interior_width, interior_depth, cap_height]);
+        translate([0, 0, z_top + frame_bar_width/2])
+            cube([interior_width - 20, interior_depth - 20, frame_bar_width + 2], center = true);
+    }
 
-        // Top opening (with frame)
-        translate([wall_thickness + top_frame_width/2,
-                   wall_thickness + top_frame_width/2,
-                   cap_height - top_frame_width - 1])
-            cube([interior_width - top_frame_width,
-                  interior_depth - top_frame_width,
-                  top_frame_width + 2]);
+    // Cross bars for support (X direction)
+    num_bars = 3;
+    bar_spacing = interior_width / (num_bars + 1);
+    for (i = [1:num_bars]) {
+        translate([-interior_width/2 + (i * bar_spacing) - frame_bar_width/2,
+                   -interior_depth/2 + corner_post_size,
+                   z_top])
+            cube([frame_bar_width, interior_depth - (2 * corner_post_size) + (2 * wall_thickness), frame_bar_width]);
+    }
+
+    // Cross bars (Y direction)
+    for (i = [1:num_bars]) {
+        translate([-interior_depth/2 + corner_post_size,
+                   -interior_depth/2 + (i * bar_spacing) - frame_bar_width/2,
+                   z_top])
+            cube([interior_width - (2 * corner_post_size) + (2 * wall_thickness), frame_bar_width, frame_bar_width]);
     }
 }
 
-module base_interface() {
-    // Skirt that fits over the lip of the fan base
-    interface_offset_x = (exterior_width - interface_width) / 2;
-    interface_offset_y = (exterior_depth - interface_depth) / 2;
+// Skirt that fits over the fan base lip
+module interface_skirt() {
+    skirt_wall = wall_thickness;
+    skirt_outer = skirt_interior + (2 * skirt_wall);
 
-    difference() {
-        // Outer skirt
-        translate([interface_offset_x - wall_thickness,
-                   interface_offset_y - wall_thickness,
-                   -interface_height])
-            cube([interface_width + 2*wall_thickness,
-                  interface_depth + 2*wall_thickness,
-                  interface_height + wall_thickness]);
+    translate([0, 0, -skirt_height])
+        difference() {
+            // Outer skirt
+            cube([skirt_outer, skirt_outer, skirt_height], center = true);
 
-        // Inner cutout (fits over lip)
-        translate([interface_offset_x, interface_offset_y, -interface_height - 1])
-            cube([interface_width, interface_depth, interface_height + 2]);
+            // Inner cutout (slides over lip)
+            translate([0, 0, skirt_wall])
+                cube([skirt_interior, skirt_interior, skirt_height], center = true);
+        }
 
-        // Remove material that would overlap with main body interior
-        translate([wall_thickness, wall_thickness, -1])
-            cube([interior_width, interior_depth, wall_thickness + 2]);
-    }
+    // Move skirt down so cap sits flush
+    translate([0, 0, -skirt_height/2]);
 }
 
+// Complete filter cap
 module filter_cap() {
     union() {
-        // Center the cap body
-        cap_body();
-        filter_support_ledge();
-        top_grill();
-        base_interface();
+        corner_posts();
+        side_walls();
+        filter_ledges();
+        top_frame();
+
+        // Interface skirt (positioned at bottom)
+        translate([0, 0, 0])
+            interface_skirt();
     }
 }
 
-// Center the cap on the build plate for easier printing
-translate([(320 - exterior_width)/2, (350 - exterior_depth)/2, interface_height])
+// Render - lift up so skirt is visible
+translate([0, 0, skirt_height])
     filter_cap();
 
-// Print dimensions for verification
+// Debug output
 echo("=== FILTER CAP DIMENSIONS ===");
-echo(str("Exterior size: ", exterior_width, " x ", exterior_depth, " mm"));
-echo(str("Total height: ", cap_height + interface_height, " mm"));
-echo(str("Filter cavity: ", interior_width, " x ", interior_depth, " x ", interior_height, " mm"));
-echo(str("Fits filters: ", filter_width, " x ", filter_depth, " x ", filter_height, " mm (x", num_filters, ")"));
+echo(str("Exterior: ", exterior_width, " x ", exterior_depth, " mm"));
+echo(str("Interior (filter space): ", interior_width, " x ", interior_depth, " mm"));
+echo(str("Cap height: ", cap_height, " mm"));
+echo(str("Total height with skirt: ", cap_height + skirt_height, " mm"));
+echo(str("Filter cavity height: ", total_filter_height, " mm"));
 echo("");
-echo("=== BUILD PLATE CHECK (H2D: 350x320x325) ===");
-echo(str("Width: ", exterior_width, " mm (limit 350) - ", exterior_width <= 350 ? "OK" : "TOO BIG"));
-echo(str("Depth: ", exterior_depth, " mm (limit 320) - ", exterior_depth <= 320 ? "OK" : "TOO BIG"));
-echo(str("Height: ", cap_height + interface_height, " mm (limit 325) - ", (cap_height + interface_height) <= 325 ? "OK" : "TOO BIG"));
+echo("=== BUILD CHECK (H2D: 350x320x325) ===");
+echo(str("Width: ", exterior_width, " / 350 mm - ", exterior_width <= 350 ? "OK" : "TOO BIG"));
+echo(str("Depth: ", exterior_depth, " / 320 mm - ", exterior_depth <= 320 ? "OK" : "TOO BIG"));
+echo(str("Height: ", cap_height + skirt_height, " / 325 mm - ", (cap_height + skirt_height) <= 325 ? "OK" : "TOO BIG"));

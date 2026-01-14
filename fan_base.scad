@@ -1,179 +1,168 @@
 // Film Dryer Fan Base
 // Mounts 4x 80mm computer fans in 2x2 configuration
-// Includes flanges for mounting to box top
+// Fans sit in recesses and blow air downward into box
 // Designed to fit Bambu Labs H2D (max 350x320x325mm)
 
 /* [Main Dimensions] */
-// Overall base size (fits under 12x12 filters)
-base_size = 310; // mm - slightly larger than filter for walls
-base_height = 35; // mm - height of base unit
-wall_thickness = 3; // mm
+base_width = 310; // mm - overall width
+base_depth = 310; // mm - overall depth
+base_height = 30; // mm - base thickness
+wall_thickness = 4; // mm
 
 /* [Fan Specifications] */
-// 80mm computer fan dimensions
-fan_size = 80; // mm
-fan_hole_spacing = 71.5; // mm - center to center of mounting holes
+fan_size = 80; // mm - 80mm fan
+fan_thickness = 25; // mm - standard fan depth
+fan_hole_spacing = 71.5; // mm - mounting hole center-to-center
 fan_screw_diameter = 4.3; // mm - for M4 screws
-fan_opening_diameter = 76; // mm - central opening for airflow
-fan_spacing = 5; // mm - gap between fans
+fan_opening_diameter = 76; // mm - airflow opening
+fan_corner_radius = 5; // mm - rounded corners on fans
+fan_gap = 8; // mm - gap between fans
+
+/* [Fan Recess] */
+recess_depth = 5; // mm - how deep fans sit into base
+recess_clearance = 1; // mm - extra space around fan
 
 /* [Flange Specifications] */
-flange_width = 25; // mm
+flange_width = 20; // mm
+flange_length = 40; // mm
 flange_thickness = 4; // mm
-flange_hole_diameter = 5; // mm - for mounting screws
-flange_hole_inset = 10; // mm - distance from edge to hole center
+flange_hole_diameter = 5; // mm
 
-/* [Filter Cap Interface] */
-lip_height = 8; // mm - lip for cap to sit on
-lip_inset = 5; // mm - how far lip is inset from edge
+/* [Cap Interface] */
+lip_height = 10; // mm - raised rim for cap to fit over
+lip_thickness = 4; // mm
 
-/* [Calculated Values] */
-// 2x2 fan grid dimensions
-fan_grid_size = (fan_size * 2) + fan_spacing;
-fan_offset = (fan_size + fan_spacing) / 2;
+/* [Calculated] */
+fan_recess_size = fan_size + (2 * recess_clearance);
+fan_offset = (fan_size + fan_gap) / 2;
 
-module fan_mount_holes() {
-    // Create 4 screw holes for one fan
+$fn = 48;
+
+// Single fan mount with recess and screw holes
+module fan_cutout() {
+    // Through hole for airflow
+    cylinder(h = base_height * 3, d = fan_opening_diameter, center = true);
+
+    // Recess for fan body (top side)
+    translate([0, 0, base_height - recess_depth])
+        linear_extrude(recess_depth + 1)
+            offset(r = fan_corner_radius)
+                offset(r = -fan_corner_radius)
+                    square([fan_recess_size, fan_recess_size], center = true);
+
+    // Screw holes
     hole_offset = fan_hole_spacing / 2;
     for (x = [-1, 1]) {
         for (y = [-1, 1]) {
             translate([x * hole_offset, y * hole_offset, 0])
-                cylinder(h = base_height + 2, d = fan_screw_diameter, $fn = 32);
+                cylinder(h = base_height * 3, d = fan_screw_diameter, center = true);
         }
     }
 }
 
-module fan_opening() {
-    // Central opening for airflow
-    cylinder(h = base_height + 2, d = fan_opening_diameter, $fn = 64);
-}
-
-module single_fan_mount() {
-    // Complete mount for one fan
-    difference() {
-        // Fan mount plate area is implicit in the base
-        union() {}
-
-        // Screw holes and opening will be cut from main body
-    }
-}
-
-module fan_grid_cutouts() {
-    // Position 4 fans in 2x2 grid
+// All 4 fans in 2x2 grid
+module all_fan_cutouts() {
     for (x = [-1, 1]) {
         for (y = [-1, 1]) {
-            translate([x * fan_offset, y * fan_offset, -1]) {
-                fan_opening();
-                fan_mount_holes();
-            }
+            translate([x * fan_offset, y * fan_offset, 0])
+                fan_cutout();
         }
     }
 }
 
+// Single mounting flange with holes
 module flange() {
-    // Single mounting flange with screw hole
     difference() {
-        cube([flange_width, flange_width, flange_thickness]);
-        translate([flange_width / 2, flange_hole_inset, -1])
-            cylinder(h = flange_thickness + 2, d = flange_hole_diameter, $fn = 32);
+        cube([flange_length, flange_width, flange_thickness], center = true);
+
+        // Two mounting holes
+        hole_spacing = flange_length * 0.6;
+        for (x = [-1, 1]) {
+            translate([x * hole_spacing / 2, 0, 0])
+                cylinder(h = flange_thickness + 2, d = flange_hole_diameter, center = true);
+        }
     }
 }
 
-module flanges() {
-    // Flanges on all 4 sides (2 per side, 8 total)
-    flange_y_offset = base_size / 4;
+// All 8 flanges around perimeter
+module all_flanges() {
+    flange_inset = base_width / 4;
+    flange_offset = base_width / 2 + flange_width / 2 - 2;
 
-    // Front flanges (extending in -Y direction)
-    for (x = [-1, 1]) {
-        translate([base_size/2 + x * flange_y_offset - flange_width/2, -flange_width, 0])
+    // Front and back
+    for (i = [-1, 1]) {
+        // Front
+        translate([i * flange_inset, -flange_offset, flange_thickness / 2])
+            flange();
+        // Back
+        translate([i * flange_inset, flange_offset, flange_thickness / 2])
             flange();
     }
 
-    // Back flanges (extending in +Y direction)
-    for (x = [-1, 1]) {
-        translate([base_size/2 + x * flange_y_offset - flange_width/2, base_size, 0])
-            rotate([0, 0, 180])
-                translate([-flange_width, 0, 0])
-                    flange();
-    }
-
-    // Left flanges (extending in -X direction)
-    for (y = [-1, 1]) {
-        translate([-flange_width, base_size/2 + y * flange_y_offset - flange_width/2, 0])
+    // Left and right
+    for (i = [-1, 1]) {
+        // Left
+        translate([-flange_offset, i * flange_inset, flange_thickness / 2])
             rotate([0, 0, 90])
-                translate([0, -flange_width, 0])
-                    flange();
-    }
-
-    // Right flanges (extending in +X direction)
-    for (y = [-1, 1]) {
-        translate([base_size, base_size/2 + y * flange_y_offset - flange_width/2, 0])
-            rotate([0, 0, -90])
+                flange();
+        // Right
+        translate([flange_offset, i * flange_inset, flange_thickness / 2])
+            rotate([0, 0, 90])
                 flange();
     }
 }
 
-module base_body() {
+// Raised lip for cap interface
+module cap_lip() {
     difference() {
-        // Main rectangular base
-        cube([base_size, base_size, base_height]);
-
-        // Hollow out the interior (leaving walls)
-        translate([wall_thickness, wall_thickness, wall_thickness])
-            cube([base_size - 2*wall_thickness,
-                  base_size - 2*wall_thickness,
-                  base_height]);
-    }
-}
-
-module lip_for_cap() {
-    // Raised lip around perimeter for cap to sit on
-    difference() {
-        // Outer lip
-        translate([lip_inset, lip_inset, base_height])
-            cube([base_size - 2*lip_inset, base_size - 2*lip_inset, lip_height]);
+        // Outer rim
+        linear_extrude(lip_height)
+            offset(r = 3)
+                offset(r = -3)
+                    square([base_width, base_depth], center = true);
 
         // Inner cutout
-        translate([lip_inset + wall_thickness, lip_inset + wall_thickness, base_height - 1])
-            cube([base_size - 2*lip_inset - 2*wall_thickness,
-                  base_size - 2*lip_inset - 2*wall_thickness,
-                  lip_height + 2]);
+        translate([0, 0, -1])
+            linear_extrude(lip_height + 2)
+                offset(r = 3)
+                    offset(r = -3)
+                        square([base_width - 2*lip_thickness, base_depth - 2*lip_thickness], center = true);
     }
 }
 
-module fan_base() {
-    difference() {
-        union() {
-            base_body();
-            lip_for_cap();
-            flanges();
+// Main base plate
+module base_plate() {
+    linear_extrude(base_height)
+        offset(r = 3)
+            offset(r = -3)
+                square([base_width, base_depth], center = true);
+}
 
-            // Add solid mounting pads for fans
-            translate([base_size/2, base_size/2, 0]) {
-                for (x = [-1, 1]) {
-                    for (y = [-1, 1]) {
-                        translate([x * fan_offset, y * fan_offset, 0]) {
-                            // Mounting pad around each fan
-                            cylinder(h = wall_thickness, d = fan_size + 10, $fn = 64);
-                        }
-                    }
-                }
-            }
+// Complete fan base
+module fan_base() {
+    union() {
+        // Base with fan cutouts
+        difference() {
+            base_plate();
+            all_fan_cutouts();
         }
 
-        // Cut fan openings and screw holes
-        translate([base_size/2, base_size/2, 0])
-            fan_grid_cutouts();
+        // Lip on top
+        translate([0, 0, base_height])
+            cap_lip();
+
+        // Flanges on bottom
+        all_flanges();
     }
 }
 
-// Render the fan base
+// Render
 fan_base();
 
-// Print dimensions for verification
+// Debug output
 echo("=== FAN BASE DIMENSIONS ===");
-echo(str("Base size: ", base_size, " x ", base_size, " mm"));
-echo(str("Total height: ", base_height + lip_height, " mm"));
-echo(str("Flange extension: ", flange_width, " mm beyond base"));
-echo(str("Max footprint with flanges: ", base_size + 2*flange_width, " x ", base_size + 2*flange_width, " mm"));
-echo(str("Fan grid size: ", fan_grid_size, " x ", fan_grid_size, " mm"));
+echo(str("Base: ", base_width, " x ", base_depth, " x ", base_height, " mm"));
+echo(str("Total height with lip: ", base_height + lip_height, " mm"));
+echo(str("Fan opening: ", fan_opening_diameter, " mm diameter"));
+echo(str("Fan recess: ", fan_recess_size, " x ", fan_recess_size, " x ", recess_depth, " mm"));
+echo(str("Fan spacing: ", fan_offset * 2, " mm center-to-center"));
