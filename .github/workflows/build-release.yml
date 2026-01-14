@@ -33,9 +33,13 @@ jobs:
 
             echo "Processing: $scad_file"
 
-            # Build STL
-            echo "  Building STL..."
-            xvfb-run -a openscad -o "output/stl/${base_name}.stl" "$scad_file"
+            # Build STL (skip assembly.scad - it's for visualization only)
+            if [ "$base_name" != "assembly" ]; then
+              echo "  Building STL..."
+              xvfb-run -a openscad -o "output/stl/${base_name}.stl" "$scad_file"
+            else
+              echo "  Skipping STL for assembly (visualization only)"
+            fi
 
             # Generate 4 images from different angles
             # Using --camera=translateX,translateY,translateZ,rotateX,rotateY,rotateZ,distance

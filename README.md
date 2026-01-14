@@ -46,6 +46,13 @@ This system consists of two pieces:
 - Fan base: 310mm x 310mm x 43mm ✓
 - Filter cap: ~305mm x 305mm x ~70mm ✓
 
+## Downloads
+
+| Part | STL Download |
+|------|--------------|
+| Fan Base | [fan_base.stl](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base.stl) |
+| Filter Cap | [filter_cap.stl](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap.stl) |
+
 ## Files
 
 | File | Description | Print This? |
@@ -56,9 +63,8 @@ This system consists of two pieces:
 
 ## Printing Instructions
 
-1. Open `fan_base.scad` in OpenSCAD and export to STL
-2. Open `filter_cap.scad` in OpenSCAD and export to STL
-3. Print both parts with the following recommended settings:
+1. Download the STL files from the table above (or from the [latest release](https://github.com/JeremyProffitt/film-dryer/releases/latest))
+2. Print both parts with the following recommended settings:
    - Layer height: 0.2mm
    - Infill: 15-20%
    - Walls: 3-4 perimeters
