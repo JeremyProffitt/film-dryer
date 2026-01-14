@@ -1,7 +1,7 @@
 // Film Dryer Filter Cap
 // Holds 2x 12x12x1 furnace filters (11.75" x 11.75" x 0.75" actual)
 // Filters slide in from the top, rest on support ledges
-// Open top with protective frame for air intake
+// Open top with protective grid for air intake
 // Designed to fit Bambu Labs H2D (max 350x320x325mm)
 
 /* [Filter Specifications] */
@@ -14,12 +14,12 @@ filter_clearance = 2; // mm - gap around filters for easy insertion
 
 /* [Frame Dimensions] */
 wall_thickness = 5; // mm
-frame_bar_width = 15; // mm - width of top frame bars
-corner_post_size = 20; // mm - size of corner structural posts
+frame_height = 15; // mm - height of top frame/grid
 
-/* [Support Ledges] */
-ledge_width = 8; // mm - how far ledge extends into frame
-ledge_thickness = 3; // mm
+/* [Grid Specifications] */
+grid_bar_width = 4; // mm - thinner bars
+grid_holes_x = 8; // number of holes in X direction
+grid_holes_y = 8; // number of holes in Y direction
 
 /* [Base Interface] */
 // Must match fan_base.scad
@@ -35,146 +35,109 @@ total_filter_height = (filter_height * num_filters) + filter_clearance;
 
 exterior_width = interior_width + (2 * wall_thickness);
 exterior_depth = interior_depth + (2 * wall_thickness);
-cap_height = total_filter_height + ledge_thickness + 5; // 5mm above filters
+cap_height = total_filter_height + 3 + 5; // ledge + space above filters
 
 // Interface skirt dimensions (fits over fan base lip)
 skirt_interior = base_width - (2 * lip_thickness) + interface_gap;
 skirt_height = lip_height + 5;
 
-module corner_post(height) {
-    cube([corner_post_size, corner_post_size, height]);
-}
+$fn = 32;
 
-// Four corner posts
-module corner_posts() {
-    // Front-left
-    translate([-exterior_width/2, -exterior_depth/2, 0])
-        corner_post(cap_height);
-
-    // Front-right
-    translate([exterior_width/2 - corner_post_size, -exterior_depth/2, 0])
-        corner_post(cap_height);
-
-    // Back-left
-    translate([-exterior_width/2, exterior_depth/2 - corner_post_size, 0])
-        corner_post(cap_height);
-
-    // Back-right
-    translate([exterior_width/2 - corner_post_size, exterior_depth/2 - corner_post_size, 0])
-        corner_post(cap_height);
-}
-
-// Walls between corner posts
-module side_walls() {
-    wall_length = exterior_width - (2 * corner_post_size);
-
-    // Front wall
-    translate([-wall_length/2, -exterior_depth/2, 0])
-        cube([wall_length, wall_thickness, cap_height]);
-
-    // Back wall
-    translate([-wall_length/2, exterior_depth/2 - wall_thickness, 0])
-        cube([wall_length, wall_thickness, cap_height]);
-
-    // Left wall
-    translate([-exterior_width/2, -wall_length/2, 0])
-        cube([wall_thickness, wall_length, cap_height]);
-
-    // Right wall
-    translate([exterior_width/2 - wall_thickness, -wall_length/2, 0])
-        cube([wall_thickness, wall_length, cap_height]);
-}
-
-// Filter support ledges (filters rest on these)
-module filter_ledges() {
-    ledge_length = interior_width - 20; // Leave gaps at corners
-
-    // Bottom ledge for first filter (at bottom of interior)
-    z_bottom = ledge_thickness;
-
-    // Front ledge
-    translate([-ledge_length/2, -interior_depth/2, 0])
-        cube([ledge_length, ledge_width, z_bottom]);
-
-    // Back ledge
-    translate([-ledge_length/2, interior_depth/2 - ledge_width, 0])
-        cube([ledge_length, ledge_width, z_bottom]);
-
-    // Left ledge
-    translate([-interior_width/2, -ledge_length/2, 0])
-        cube([ledge_width, ledge_length, z_bottom]);
-
-    // Right ledge
-    translate([interior_width/2 - ledge_width, -ledge_length/2, 0])
-        cube([ledge_width, ledge_length, z_bottom]);
-}
-
-// Top frame (protective bars across the open top)
-module top_frame() {
-    z_top = cap_height - frame_bar_width;
-
-    // Perimeter frame
+// Main frame walls
+module frame_walls() {
     difference() {
-        translate([0, 0, z_top + frame_bar_width/2])
-            cube([exterior_width, exterior_depth, frame_bar_width], center = true);
+        // Outer shell
+        linear_extrude(cap_height)
+            offset(r = 3) offset(r = -3)
+                square([exterior_width, exterior_depth], center = true);
 
-        translate([0, 0, z_top + frame_bar_width/2])
-            cube([interior_width - 20, interior_depth - 20, frame_bar_width + 2], center = true);
-    }
-
-    // Cross bars for support (X direction)
-    num_bars = 3;
-    bar_spacing = interior_width / (num_bars + 1);
-    for (i = [1:num_bars]) {
-        translate([-interior_width/2 + (i * bar_spacing) - frame_bar_width/2,
-                   -interior_depth/2 + corner_post_size,
-                   z_top])
-            cube([frame_bar_width, interior_depth - (2 * corner_post_size) + (2 * wall_thickness), frame_bar_width]);
-    }
-
-    // Cross bars (Y direction)
-    for (i = [1:num_bars]) {
-        translate([-interior_depth/2 + corner_post_size,
-                   -interior_depth/2 + (i * bar_spacing) - frame_bar_width/2,
-                   z_top])
-            cube([interior_width - (2 * corner_post_size) + (2 * wall_thickness), frame_bar_width, frame_bar_width]);
+        // Inner cutout (hollow)
+        translate([0, 0, -1])
+            linear_extrude(cap_height + 2)
+                square([interior_width - 10, interior_depth - 10], center = true);
     }
 }
 
-// Skirt that fits over the fan base lip
+// Top grid with many smaller holes
+module top_grid() {
+    grid_z = cap_height - frame_height;
+
+    // Calculate hole sizes based on count
+    usable_width = interior_width - 20; // Leave margin
+    usable_depth = interior_depth - 20;
+
+    hole_width = (usable_width - (grid_holes_x + 1) * grid_bar_width) / grid_holes_x;
+    hole_depth = (usable_depth - (grid_holes_y + 1) * grid_bar_width) / grid_holes_y;
+
+    translate([0, 0, grid_z]) {
+        difference() {
+            // Solid top frame
+            linear_extrude(frame_height)
+                offset(r = 3) offset(r = -3)
+                    square([exterior_width, exterior_depth], center = true);
+
+            // Cut grid holes
+            start_x = -usable_width/2 + grid_bar_width + hole_width/2;
+            start_y = -usable_depth/2 + grid_bar_width + hole_depth/2;
+            step_x = hole_width + grid_bar_width;
+            step_y = hole_depth + grid_bar_width;
+
+            for (ix = [0:grid_holes_x-1]) {
+                for (iy = [0:grid_holes_y-1]) {
+                    translate([start_x + ix * step_x, start_y + iy * step_y, -1])
+                        linear_extrude(frame_height + 2)
+                            square([hole_width, hole_depth], center = true);
+                }
+            }
+        }
+    }
+}
+
+// Bottom skirt that fits over fan base lip
 module interface_skirt() {
     skirt_wall = wall_thickness;
     skirt_outer = skirt_interior + (2 * skirt_wall);
 
-    translate([0, 0, -skirt_height])
+    translate([0, 0, -skirt_height]) {
         difference() {
             // Outer skirt
-            cube([skirt_outer, skirt_outer, skirt_height], center = true);
+            linear_extrude(skirt_height)
+                offset(r = 3) offset(r = -3)
+                    square([skirt_outer, skirt_outer], center = true);
 
             // Inner cutout (slides over lip)
             translate([0, 0, skirt_wall])
-                cube([skirt_interior, skirt_interior, skirt_height], center = true);
+                linear_extrude(skirt_height)
+                    square([skirt_interior, skirt_interior], center = true);
         }
+    }
+}
 
-    // Move skirt down so cap sits flush
-    translate([0, 0, -skirt_height/2]);
+// Filter support ledges at bottom
+module filter_ledges() {
+    ledge_width = 8;
+    ledge_thickness = 3;
+    ledge_length = interior_width - 30;
+
+    // Four ledges around perimeter
+    for (angle = [0, 90, 180, 270]) {
+        rotate([0, 0, angle])
+            translate([0, interior_depth/2 - ledge_width/2 - 5, ledge_thickness/2])
+                cube([ledge_length, ledge_width, ledge_thickness], center = true);
+    }
 }
 
 // Complete filter cap
 module filter_cap() {
     union() {
-        corner_posts();
-        side_walls();
+        frame_walls();
+        top_grid();
+        interface_skirt();
         filter_ledges();
-        top_frame();
-
-        // Interface skirt (positioned at bottom)
-        translate([0, 0, 0])
-            interface_skirt();
     }
 }
 
-// Render - lift up so skirt is visible
+// Render - position so skirt is above build plate
 translate([0, 0, skirt_height])
     filter_cap();
 
@@ -184,7 +147,7 @@ echo(str("Exterior: ", exterior_width, " x ", exterior_depth, " mm"));
 echo(str("Interior (filter space): ", interior_width, " x ", interior_depth, " mm"));
 echo(str("Cap height: ", cap_height, " mm"));
 echo(str("Total height with skirt: ", cap_height + skirt_height, " mm"));
-echo(str("Filter cavity height: ", total_filter_height, " mm"));
+echo(str("Grid: ", grid_holes_x, " x ", grid_holes_y, " holes"));
 echo("");
 echo("=== BUILD CHECK (H2D: 350x320x325) ===");
 echo(str("Width: ", exterior_width, " / 350 mm - ", exterior_width <= 350 ? "OK" : "TOO BIG"));

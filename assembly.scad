@@ -20,6 +20,8 @@ fan_color = "DimGray";
 base_width = 310;
 base_height = 30;
 lip_height = 10;
+lip_thickness = 4;
+recess_depth = base_height - 5; // 25mm
 
 filter_width = 298.45;
 filter_depth = 298.45;
@@ -30,13 +32,21 @@ fan_gap = 8;
 fan_offset = (fan_size + fan_gap) / 2;
 fan_opening = 76;
 
+corner_inset = 25.4;
+
 // Filter cap dimensions
 cap_wall = 5;
-cap_interior = filter_width + 2;
-cap_exterior = cap_interior + (2 * cap_wall);
+interior_width = filter_width + 2;
+interior_depth = filter_depth + 2;
+exterior_width = interior_width + (2 * cap_wall);
+exterior_depth = interior_depth + (2 * cap_wall);
 total_filter_height = (filter_height * 2) + 2;
 cap_height = total_filter_height + 3 + 5;
 skirt_height = lip_height + 5;
+
+// Grid settings
+grid_holes = 8;
+grid_bar_width = 4;
 
 $fn = 32;
 
@@ -44,19 +54,12 @@ $fn = 32;
 module fan_model() {
     color(fan_color) {
         difference() {
-            // Fan housing
             linear_extrude(25)
                 offset(r = 5) offset(r = -5)
                     square([fan_size, fan_size], center = true);
-
-            // Center opening
             cylinder(h = 30, d = fan_opening - 5, center = true);
         }
-
-        // Hub
         cylinder(h = 22, d = 25, center = true);
-
-        // Blades
         for (i = [0:6]) {
             rotate([0, 0, i * (360/7)])
                 translate([18, 0, 0])
@@ -80,17 +83,30 @@ module fan_base_visual() {
                 offset(r = 3) offset(r = -3)
                     square([base_width, base_width], center = true);
 
-            // Fan openings
+            // Deep fan recesses and openings
             for (x = [-1, 1]) {
                 for (y = [-1, 1]) {
-                    translate([x * fan_offset, y * fan_offset, -1])
-                        cylinder(h = base_height + 2, d = fan_opening);
+                    translate([x * fan_offset, y * fan_offset, 0]) {
+                        // Deep recess
+                        translate([0, 0, base_height - recess_depth])
+                            linear_extrude(recess_depth + 1)
+                                offset(r = 5) offset(r = -5)
+                                    square([82, 82], center = true);
+                        // Through hole
+                        cylinder(h = base_height * 3, d = fan_opening, center = true);
+                    }
+                }
+            }
 
-                    // Recesses
-                    translate([x * fan_offset, y * fan_offset, base_height - 5])
-                        linear_extrude(6)
-                            offset(r = 5) offset(r = -5)
-                                square([82, 82], center = true);
+            // Corner mounting holes
+            hole_pos = base_width/2 - corner_inset;
+            for (x = [-1, 1]) {
+                for (y = [-1, 1]) {
+                    translate([x * hole_pos, y * hole_pos, 0]) {
+                        cylinder(h = base_height * 3, d = 5, center = true);
+                        translate([0, 0, base_height - 5])
+                            cylinder(h = 6, d = 10);
+                    }
                 }
             }
         }
@@ -104,18 +120,8 @@ module fan_base_visual() {
                 translate([0, 0, -1])
                     linear_extrude(lip_height + 2)
                         offset(r = 3) offset(r = -3)
-                            square([base_width - 8, base_width - 8], center = true);
+                            square([base_width - 2*lip_thickness, base_width - 2*lip_thickness], center = true);
             }
-
-        // Flanges
-        flange_inset = base_width / 4;
-        for (angle = [0, 90, 180, 270]) {
-            rotate([0, 0, angle])
-                for (i = [-1, 1]) {
-                    translate([i * flange_inset, -base_width/2 - 8, 2])
-                        cube([40, 20, 4], center = true);
-                }
-        }
     }
 }
 
@@ -126,48 +132,44 @@ module filter_cap_visual() {
         difference() {
             linear_extrude(cap_height)
                 offset(r = 3) offset(r = -3)
-                    square([cap_exterior, cap_exterior], center = true);
-
+                    square([exterior_width, exterior_depth], center = true);
             translate([0, 0, -1])
                 linear_extrude(cap_height + 2)
-                    square([cap_interior - 10, cap_interior - 10], center = true);
+                    square([interior_width - 10, interior_depth - 10], center = true);
         }
 
-        // Top grid
+        // Top grid with smaller holes
         grid_z = cap_height - 15;
-        bar_width = 12;
+        usable = interior_width - 20;
+        hole_size = (usable - (grid_holes + 1) * grid_bar_width) / grid_holes;
+        step = hole_size + grid_bar_width;
 
-        // Perimeter at top
-        translate([0, 0, grid_z])
+        translate([0, 0, grid_z]) {
             difference() {
                 linear_extrude(15)
                     offset(r = 3) offset(r = -3)
-                        square([cap_exterior, cap_exterior], center = true);
-                translate([0, 0, -1])
-                    linear_extrude(17)
-                        square([cap_interior - 20, cap_interior - 20], center = true);
-            }
+                        square([exterior_width, exterior_depth], center = true);
 
-        // Cross bars
-        spacing = cap_interior / 4;
-        translate([0, 0, grid_z]) {
-            for (i = [-1, 0, 1]) {
-                translate([i * spacing, 0, 7.5])
-                    cube([bar_width, cap_interior - 20, 15], center = true);
-                translate([0, i * spacing, 7.5])
-                    cube([cap_interior - 20, bar_width, 15], center = true);
+                start = -usable/2 + grid_bar_width + hole_size/2;
+                for (ix = [0:grid_holes-1]) {
+                    for (iy = [0:grid_holes-1]) {
+                        translate([start + ix * step, start + iy * step, -1])
+                            cube([hole_size, hole_size, 17], center = true);
+                    }
+                }
             }
         }
 
         // Bottom skirt
+        skirt_interior = base_width - (2 * lip_thickness) + 0.5;
         translate([0, 0, -skirt_height])
             difference() {
                 linear_extrude(skirt_height)
                     offset(r = 3) offset(r = -3)
-                        square([base_width + 2, base_width + 2], center = true);
-                translate([0, 0, -1])
-                    linear_extrude(skirt_height + 2)
-                        square([base_width - 8 + 1, base_width - 8 + 1], center = true);
+                        square([skirt_interior + 10, skirt_interior + 10], center = true);
+                translate([0, 0, cap_wall])
+                    linear_extrude(skirt_height)
+                        square([skirt_interior, skirt_interior], center = true);
             }
     }
 }
@@ -180,11 +182,11 @@ module assembly() {
     if (show_fan_base)
         fan_base_visual();
 
-    // Fans sitting in recesses
+    // Fans sitting in deep recesses
     if (show_fans) {
         for (x = [-1, 1]) {
             for (y = [-1, 1]) {
-                translate([x * fan_offset, y * fan_offset, base_height - 5 + 12.5])
+                translate([x * fan_offset, y * fan_offset, base_height - recess_depth + 12.5])
                     fan_model();
             }
         }
@@ -199,12 +201,8 @@ module assembly() {
     // Filters inside cap
     if (show_filters) {
         filter_z = cap_base_z + 5 + explode;
-
-        // Bottom filter
         translate([0, 0, filter_z + filter_height/2])
             filter_model();
-
-        // Top filter
         translate([0, 0, filter_z + filter_height + 2 + filter_height/2])
             filter_model();
     }
@@ -215,9 +213,9 @@ assembly();
 
 // Info
 echo("=== ASSEMBLY INFO ===");
-echo("Blue: Fan base - mounts 4x 80mm fans, attaches to box via flanges");
+echo("Blue: Fan base - 4x 80mm fans in 25mm deep recesses, corner mounting holes");
 echo("Gray: 80mm computer fans (shown in recesses)");
-echo("Orange: Filter cap - holds 2 stacked filters, sits on base lip");
+echo("Orange: Filter cap - 8x8 grid, holds 2 stacked filters");
 echo("White: Furnace filters 11.75x11.75x0.75 inches (x2 stacked)");
 echo("");
 echo("Airflow: Air enters top through filters -> fans blow down into box");
