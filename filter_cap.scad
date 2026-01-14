@@ -2,6 +2,7 @@
 // Holds 2x 12x12x1 furnace filters (11.75" x 11.75" x 0.75" actual)
 // Filters slide in from the top, rest on support ledges
 // Open top with protective grid for air intake
+// Interior cutout goes all the way through
 // Designed to fit Bambu Labs H2D (max 350x320x325mm)
 
 /* [Filter Specifications] */
@@ -40,27 +41,40 @@ cap_height = total_filter_height + 3 + 5; // ledge + space above filters
 // Interface skirt dimensions (fits over fan base lip)
 skirt_interior = base_width - (2 * lip_thickness) + interface_gap;
 skirt_height = lip_height + 5;
+skirt_wall = wall_thickness;
+skirt_outer = skirt_interior + (2 * skirt_wall);
+
+// Total height of entire object
+total_height = cap_height + skirt_height;
 
 $fn = 32;
 
-// Main frame walls
-module frame_walls() {
+// Main body - outer walls with interior cutout going all the way through
+module main_body() {
     difference() {
-        // Outer shell
-        linear_extrude(cap_height)
-            offset(r = 3) offset(r = -3)
-                square([exterior_width, exterior_depth], center = true);
+        union() {
+            // Main cap body
+            translate([0, 0, skirt_height])
+                linear_extrude(cap_height)
+                    offset(r = 3) offset(r = -3)
+                        square([exterior_width, exterior_depth], center = true);
 
-        // Inner cutout (hollow)
+            // Skirt at bottom
+            linear_extrude(skirt_height)
+                offset(r = 3) offset(r = -3)
+                    square([skirt_outer, skirt_outer], center = true);
+        }
+
+        // Interior cutout - goes ALL THE WAY through from bottom to top
         translate([0, 0, -1])
-            linear_extrude(cap_height + 2)
+            linear_extrude(total_height + 2)
                 square([interior_width - 10, interior_depth - 10], center = true);
     }
 }
 
 // Top grid with many smaller holes
 module top_grid() {
-    grid_z = cap_height - frame_height;
+    grid_z = skirt_height + cap_height - frame_height;
 
     // Calculate hole sizes based on count
     usable_width = interior_width - 20; // Leave margin
@@ -93,36 +107,17 @@ module top_grid() {
     }
 }
 
-// Bottom skirt that fits over fan base lip
-module interface_skirt() {
-    skirt_wall = wall_thickness;
-    skirt_outer = skirt_interior + (2 * skirt_wall);
-
-    translate([0, 0, -skirt_height]) {
-        difference() {
-            // Outer skirt
-            linear_extrude(skirt_height)
-                offset(r = 3) offset(r = -3)
-                    square([skirt_outer, skirt_outer], center = true);
-
-            // Inner cutout (slides over lip)
-            translate([0, 0, skirt_wall])
-                linear_extrude(skirt_height)
-                    square([skirt_interior, skirt_interior], center = true);
-        }
-    }
-}
-
-// Filter support ledges at bottom
+// Filter support ledges
 module filter_ledges() {
     ledge_width = 8;
     ledge_thickness = 3;
     ledge_length = interior_width - 30;
+    ledge_z = skirt_height + ledge_thickness/2;
 
     // Four ledges around perimeter
     for (angle = [0, 90, 180, 270]) {
         rotate([0, 0, angle])
-            translate([0, interior_depth/2 - ledge_width/2 - 5, ledge_thickness/2])
+            translate([0, interior_depth/2 - ledge_width/2 - 5, ledge_z])
                 cube([ledge_length, ledge_width, ledge_thickness], center = true);
     }
 }
@@ -130,26 +125,25 @@ module filter_ledges() {
 // Complete filter cap
 module filter_cap() {
     union() {
-        frame_walls();
+        main_body();
         top_grid();
-        interface_skirt();
         filter_ledges();
     }
 }
 
-// Render - position so skirt is above build plate
-translate([0, 0, skirt_height])
-    filter_cap();
+// Render
+filter_cap();
 
 // Debug output
 echo("=== FILTER CAP DIMENSIONS ===");
 echo(str("Exterior: ", exterior_width, " x ", exterior_depth, " mm"));
-echo(str("Interior (filter space): ", interior_width, " x ", interior_depth, " mm"));
+echo(str("Interior cutout: ", interior_width - 10, " x ", interior_depth - 10, " mm (through entire height)"));
 echo(str("Cap height: ", cap_height, " mm"));
-echo(str("Total height with skirt: ", cap_height + skirt_height, " mm"));
+echo(str("Skirt height: ", skirt_height, " mm"));
+echo(str("Total height: ", total_height, " mm"));
 echo(str("Grid: ", grid_holes_x, " x ", grid_holes_y, " holes"));
 echo("");
 echo("=== BUILD CHECK (H2D: 350x320x325) ===");
 echo(str("Width: ", exterior_width, " / 350 mm - ", exterior_width <= 350 ? "OK" : "TOO BIG"));
 echo(str("Depth: ", exterior_depth, " / 320 mm - ", exterior_depth <= 320 ? "OK" : "TOO BIG"));
-echo(str("Height: ", cap_height + skirt_height, " / 325 mm - ", (cap_height + skirt_height) <= 325 ? "OK" : "TOO BIG"));
+echo(str("Height: ", total_height, " / 325 mm - ", total_height <= 325 ? "OK" : "TOO BIG"));
