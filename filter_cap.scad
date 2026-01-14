@@ -103,6 +103,7 @@ module filter_cap() {
 }
 
 // Render
+color([1.0, 0.6, 0.6]) // Light red
 filter_cap();
 
 // Debug output

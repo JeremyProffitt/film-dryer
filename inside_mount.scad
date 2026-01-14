@@ -90,6 +90,7 @@ module inside_mount() {
 }
 
 // Render
+color([0.6, 0.8, 1.0]) // Light blue
 inside_mount();
 
 // Debug output

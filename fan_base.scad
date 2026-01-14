@@ -149,6 +149,7 @@ module fan_base() {
 }
 
 // Render
+color([0.6, 0.8, 1.0]) // Light blue
 fan_base();
 
 // Debug output
