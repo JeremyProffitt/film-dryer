@@ -16,7 +16,7 @@ filter_clearance = 2; // mm - gap around filters for easy insertion
 /* [Frame Dimensions] */
 wall_thickness = 5; // mm
 frame_height = 15; // mm - height of top frame/grid
-top_radius = 4; // mm - radius for top edge rounding
+top_radius = 2; // mm - radius for top edge rounding
 
 /* [Grid Specifications] */
 grid_bar_width = 4; // mm - thinner bars
@@ -62,7 +62,7 @@ hole_depth = (usable_depth - (grid_holes_y + 1) * grid_bar_width) / grid_holes_y
 // Z position where grid starts
 grid_z = skirt_height + cap_height - frame_height;
 
-$fn = 32;
+$fn = 96; // Higher value for smoother curves
 
 // Rounded rectangle module for 2D shape
 module rounded_rect(w, h, r) {

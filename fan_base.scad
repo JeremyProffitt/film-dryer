@@ -22,20 +22,20 @@ recess_depth = base_height - 5; // 25mm deep
 fan_recess_size = 85; // mm - 85x85mm square cutout for 80mm fans with gap
 
 /* [Corner Mounting Holes] */
-corner_inset = 25.4; // mm - 1 inch from corner
+corner_inset = 30; // mm - 1 inch from corner
 // #10 screw: shaft ~4.8mm, head ~9.5mm
 mounting_hole_diameter = 5.0; // mm - clearance for #10 screw shaft
 mounting_head_diameter = 10.0; // mm - clearance for #10 screw head
 mounting_head_depth = 5.0; // mm - recess depth for screw head
 
 /* [Cap Interface] */
-lip_height = 10; // mm - raised rim for cap to fit over
-lip_thickness = 4; // mm
+lip_height = 25; // mm - raised rim for cap to fit over
+lip_thickness = 20; // mm
 
 /* [Calculated] */
 fan_offset = (fan_size + fan_gap) / 2;
 
-$fn = 48;
+$fn = 96; // Higher value for smoother curves
 
 // Single fan mount with deep recess and screw holes
 module fan_cutout() {
