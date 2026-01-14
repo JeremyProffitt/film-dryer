@@ -78,18 +78,20 @@ module round_top_edges(width, depth, radius) {
     }
 }
 
-// Grid hole cutouts
+// Grid hole cutouts with rounded corners
 module grid_holes() {
     start_x = -usable_width/2 + grid_bar_width + hole_width/2;
     start_y = -usable_depth/2 + grid_bar_width + hole_depth/2;
     step_x = hole_width + grid_bar_width;
     step_y = hole_depth + grid_bar_width;
+    hole_radius = 4; // mm - radius for grid hole corners
 
     for (ix = [0:grid_holes_x-1]) {
         for (iy = [0:grid_holes_y-1]) {
             translate([start_x + ix * step_x, start_y + iy * step_y, 0])
                 linear_extrude(frame_height + top_radius + 2)
-                    square([hole_width, hole_depth], center = true);
+                    offset(r = hole_radius) offset(r = -hole_radius)
+                        square([hole_width, hole_depth], center = true);
         }
     }
 }
