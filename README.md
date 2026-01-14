@@ -4,27 +4,20 @@ A 3D printable filtered air system for film drying boxes. Designed to fit on the
 
 ## Preview
 
-### Assembly
-![Assembly - Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/assembly_isometric.png)
-
-| Front | Back | Top |
-|-------|------|-----|
-| ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/assembly_front.png) | ![Back](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/assembly_back.png) | ![Top](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/assembly_top.png) |
-
 ### Fan Base
-| Isometric | Front | Back | Top |
-|-----------|-------|------|-----|
-| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base_isometric.png) | ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base_front.png) | ![Back](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base_back.png) | ![Top](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base_top.png) |
+| Isometric | Isometric Flipped |
+|-----------|-------------------|
+| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base_isometric.png) | ![Isometric Flipped](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base_isometric_flipped.png) |
 
 ### Filter Cap
-| Isometric | Front | Back | Top |
-|-----------|-------|------|-----|
-| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_isometric.png) | ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_front.png) | ![Back](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_back.png) | ![Top](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_top.png) |
+| Isometric | Isometric Flipped |
+|-----------|-------------------|
+| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_isometric.png) | ![Isometric Flipped](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_isometric_flipped.png) |
 
 ### Inside Mount
-| Isometric | Front | Back | Top |
-|-----------|-------|------|-----|
-| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_isometric.png) | ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_front.png) | ![Back](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_back.png) | ![Top](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_top.png) |
+| Isometric | Isometric Flipped |
+|-----------|-------------------|
+| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_isometric.png) | ![Isometric Flipped](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_isometric_flipped.png) |
 
 ## Overview
 
@@ -67,7 +60,6 @@ This system consists of three pieces:
 | `fan_base.scad` | Fan mounting base with flanges | ✓ Yes |
 | `filter_cap.scad` | Filter holder cap | ✓ Yes |
 | `inside_mount.scad` | Interior mounting plate | ✓ Yes |
-| `assembly.scad` | Assembly visualization | No (view only) |
 
 ## Printing Instructions
 

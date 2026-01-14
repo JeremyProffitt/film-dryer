@@ -33,45 +33,25 @@ jobs:
 
             echo "Processing: $scad_file"
 
-            # Build STL (skip assembly.scad - it's for visualization only)
-            if [ "$base_name" != "assembly" ]; then
-              echo "  Building STL..."
-              xvfb-run -a openscad -o "output/stl/${base_name}.stl" "$scad_file"
-            else
-              echo "  Skipping STL for assembly (visualization only)"
-            fi
+            # Build STL
+            echo "  Building STL..."
+            xvfb-run -a openscad -o "output/stl/${base_name}.stl" "$scad_file"
 
             # Generate 4 images from different angles
             # Using --camera=translateX,translateY,translateZ,rotateX,rotateY,rotateZ,distance
             # and --autocenter --viewall for automatic sizing
 
-            echo "  Rendering front view..."
-            xvfb-run -a openscad -o "output/images/${base_name}_front.png" \
-              --camera=0,0,0,90,0,0,0 \
-              --autocenter --viewall \
-              --imgsize=1024,1024 \
-              --colorscheme=Tomorrow \
-              "$scad_file"
-
-            echo "  Rendering back view..."
-            xvfb-run -a openscad -o "output/images/${base_name}_back.png" \
-              --camera=0,0,0,90,0,180,0 \
-              --autocenter --viewall \
-              --imgsize=1024,1024 \
-              --colorscheme=Tomorrow \
-              "$scad_file"
-
-            echo "  Rendering top view..."
-            xvfb-run -a openscad -o "output/images/${base_name}_top.png" \
-              --camera=0,0,0,0,0,0,0 \
-              --autocenter --viewall \
-              --imgsize=1024,1024 \
-              --colorscheme=Tomorrow \
-              "$scad_file"
-
             echo "  Rendering isometric view..."
             xvfb-run -a openscad -o "output/images/${base_name}_isometric.png" \
               --camera=0,0,0,55,0,25,0 \
+              --autocenter --viewall \
+              --imgsize=1024,1024 \
+              --colorscheme=Tomorrow \
+              "$scad_file"
+
+            echo "  Rendering isometric flipped view..."
+            xvfb-run -a openscad -o "output/images/${base_name}_isometric_flipped.png" \
+              --camera=0,0,0,55,0,205,0 \
               --autocenter --viewall \
               --imgsize=1024,1024 \
               --colorscheme=Tomorrow \
@@ -115,7 +95,7 @@ jobs:
 
           ## Contents
           - **STL files**: Ready-to-print 3D models
-          - **Images**: Preview renders from 4 angles (front, back, top, isometric)
+          - **Images**: Preview renders from 2 isometric angles
 
           Built from commit: ${{ github.sha }}" \
             --draft \
