@@ -3,6 +3,7 @@
 // Open top with protective grid for air intake
 // Interior cutout goes all the way through
 // Rounded top edges with 4mm radius
+// Skirt has rounded corners and interior chamfer for printing upside down
 // Designed to fit Bambu Labs H2D (max 350x320x325mm)
 
 /* [Filter Specifications] */
@@ -31,6 +32,11 @@ base_height = 30; // mm - fan base plate thickness
 lip_height = 10; // mm
 lip_thickness = 4; // mm
 interface_gap = 0.5; // mm - clearance for fit
+
+/* [Skirt Printability] */
+// Model prints upside down - skirt needs chamfer to avoid overhangs
+skirt_corner_radius = 8; // mm - rounded corners on skirt
+skirt_chamfer = 10; // mm - chamfer height for printability
 
 /* [Calculated] */
 interior_width = filter_width + filter_clearance;
@@ -87,37 +93,52 @@ module grid_holes() {
     }
 }
 
+// Skirt with rounded corners and interior chamfer for printability
+module skirt_with_chamfer() {
+    // Outer skirt shell with rounded corners
+    difference() {
+        linear_extrude(skirt_height)
+            rounded_rect(skirt_outer, skirt_outer, skirt_corner_radius);
+
+        // Interior cutout - but leave material for chamfer at top
+        translate([0, 0, -1])
+            linear_extrude(skirt_height - skirt_chamfer + 1)
+                rounded_rect(skirt_interior, skirt_interior, skirt_corner_radius - skirt_wall);
+
+        // Chamfered transition at top of skirt (inside)
+        // Hull from skirt interior at bottom of chamfer to exterior size at top
+        translate([0, 0, skirt_height - skirt_chamfer])
+            hull() {
+                // Bottom of chamfer - skirt interior size
+                linear_extrude(0.1)
+                    rounded_rect(skirt_interior, skirt_interior, skirt_corner_radius - skirt_wall);
+                // Top of chamfer - matches exterior body size (smaller)
+                translate([0, 0, skirt_chamfer])
+                    linear_extrude(0.1)
+                        rounded_rect(exterior_width - 2*wall_thickness, exterior_depth - 2*wall_thickness, 3);
+            }
+    }
+}
+
 // Complete filter cap with rounded top edges
 module filter_cap() {
     difference() {
-        // Main solid body
-        minkowski() {
-            union() {
-                // Main cap body - reduced size for minkowski
-                translate([0, 0, skirt_height])
+        union() {
+            // Main cap body with rounded top edges
+            translate([0, 0, skirt_height])
+                minkowski() {
                     linear_extrude(cap_height - top_radius)
                         rounded_rect(exterior_width - 2*top_radius, exterior_depth - 2*top_radius, 3);
+                    sphere(r = top_radius);
+                }
 
-                // Skirt at bottom - no rounding needed
-                linear_extrude(skirt_height)
-                    rounded_rect(skirt_outer, skirt_outer, 3);
-            }
-
-            // Add rounding sphere - but only affects top due to positioning
-            sphere(r = top_radius);
+            // Skirt with rounded corners and chamfer
+            skirt_with_chamfer();
         }
 
-        // Cut off the bottom expansion from minkowski
-        translate([0, 0, -top_radius - 1])
+        // Cut off the bottom expansion from minkowski on main body
+        translate([0, 0, skirt_height - top_radius - 1])
             cube([exterior_width + 20, exterior_depth + 20, top_radius * 2 + 2], center = true);
-
-        // Cut off side expansion from minkowski on skirt
-        difference() {
-            translate([0, 0, skirt_height/2])
-                cube([exterior_width + 20, exterior_depth + 20, skirt_height + 2], center = true);
-            translate([0, 0, skirt_height/2])
-                cube([skirt_outer, skirt_outer, skirt_height + 4], center = true);
-        }
 
         // Interior cutout - stops below the grid section
         translate([0, 0, -1])
@@ -140,6 +161,8 @@ echo(str("Cap height: ", cap_height, " mm"));
 echo(str("Skirt height: ", skirt_height, " mm"));
 echo(str("Total height: ", total_height, " mm"));
 echo(str("Top edge radius: ", top_radius, " mm"));
+echo(str("Skirt corner radius: ", skirt_corner_radius, " mm"));
+echo(str("Skirt chamfer: ", skirt_chamfer, " mm"));
 echo(str("Grid: ", grid_holes_x, " x ", grid_holes_y, " holes"));
 echo("");
 echo("=== BUILD CHECK (H2D: 350x320x325) ===");
