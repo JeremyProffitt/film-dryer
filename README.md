@@ -2,6 +2,25 @@
 
 A 3D printable filtered air system for film drying boxes. Designed to fit on the Bambu Labs H2D 3D printer.
 
+## Preview
+
+### Assembly
+![Assembly - Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/assembly_isometric.png)
+
+| Front | Back | Top |
+|-------|------|-----|
+| ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/assembly_front.png) | ![Back](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/assembly_back.png) | ![Top](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/assembly_top.png) |
+
+### Fan Base
+| Isometric | Front | Back | Top |
+|-----------|-------|------|-----|
+| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base_isometric.png) | ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base_front.png) | ![Back](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base_back.png) | ![Top](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base_top.png) |
+
+### Filter Cap
+| Isometric | Front | Back | Top |
+|-----------|-------|------|-----|
+| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_isometric.png) | ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_front.png) | ![Back](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_back.png) | ![Top](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_top.png) |
+
 ## Overview
 
 This system consists of two pieces:

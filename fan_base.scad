@@ -11,7 +11,9 @@ base_height = 30; // mm - base plate thickness
 /* [Fan Specifications] */
 fan_size = 80; // mm - 80mm fan
 fan_hole_spacing = 71.5; // mm - mounting hole center-to-center
-fan_screw_diameter = 4.3; // mm - for M4 screws
+fan_screw_diameter = 3.8; // mm - clearance for #6 screw shaft
+fan_screw_head_diameter = 7.0; // mm - flat head #6 screw head diameter (82°)
+fan_screw_countersink_depth = 2.2; // mm - depth of countersink cone
 fan_opening_diameter = 76; // mm - airflow opening
 fan_corner_radius = 5; // mm - rounded corners on fans
 fan_gap = 8; // mm - gap between fans
@@ -48,12 +50,19 @@ module fan_cutout() {
     // Through hole for airflow (all the way through remaining 5mm)
     cylinder(h = base_height * 3, d = fan_opening_diameter, center = true);
 
-    // Screw holes for fan mounting
+    // Screw holes for fan mounting with countersunk heads
     hole_offset = fan_hole_spacing / 2;
     for (x = [-1, 1]) {
         for (y = [-1, 1]) {
-            translate([x * hole_offset, y * hole_offset, 0])
+            translate([x * hole_offset, y * hole_offset, 0]) {
+                // Through hole for screw shaft
                 cylinder(h = base_height * 3, d = fan_screw_diameter, center = true);
+                // Countersink cone at bottom for flat head screw
+                translate([0, 0, -1])
+                    cylinder(h = fan_screw_countersink_depth + 1,
+                             d1 = fan_screw_head_diameter,
+                             d2 = fan_screw_diameter);
+            }
         }
     }
 }

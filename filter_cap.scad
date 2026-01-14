@@ -2,8 +2,7 @@
 // Holds 2x 12x12x1 furnace filters (11.75" x 11.75" x 0.75" actual)
 // Open top with protective grid for air intake
 // Interior cutout goes all the way through
-// Rounded top edges with 4mm radius
-// Skirt has rounded corners and interior chamfer for printing upside down
+// Rounded top and bottom edges
 // Designed to fit Bambu Labs H2D (max 350x320x325mm)
 
 /* [Filter Specifications] */
@@ -20,23 +19,16 @@ frame_height = 15; // mm - height of top frame/grid
 top_radius = 2; // mm - radius for top edge rounding
 
 /* [Grid Specifications] */
-grid_bar_width = 4; // mm - thinner bars
-grid_holes_x = 8; // number of holes in X direction
-grid_holes_y = 8; // number of holes in Y direction
-grid_hole_radius = 4; // mm - radius for grid hole corners
+grid_bar_width = 3; // mm - thinner bars
+grid_holes_x = 12; // number of holes in X direction
+grid_holes_y = 12; // number of holes in Y direction
+grid_hole_radius = 2; // mm - radius for grid hole corners
 
 /* [Base Interface] */
 // Must match fan_base.scad
 base_width = 310; // mm
 base_height = 30; // mm - fan base plate thickness
-lip_height = 10; // mm
-lip_thickness = 4; // mm
-interface_gap = 0.5; // mm - clearance for fit
-
-/* [Skirt Printability] */
-// Model prints upside down - skirt needs chamfer to avoid overhangs
-skirt_corner_radius = 8; // mm - rounded corners on skirt
-skirt_chamfer = 10; // mm - chamfer height for printability
+lip_height = 25; // mm - must match fan_base lip_height
 
 /* [Calculated] */
 interior_width = filter_width + filter_clearance;
@@ -46,18 +38,13 @@ total_filter_height = (filter_height * num_filters) + filter_clearance;
 exterior_width = interior_width + (2 * wall_thickness);
 exterior_depth = interior_depth + (2 * wall_thickness);
 
-// Cap height = 2 filters + fan base height + clearance
-fan_base_total_height = base_height + lip_height; // 40mm
-cap_height = total_filter_height + fan_base_total_height + 5; // filters + base + clearance
-
-// Interface skirt dimensions (fits over fan base lip)
-skirt_interior = base_width - (2 * lip_thickness) + interface_gap;
-skirt_height = lip_height + 5;
-skirt_wall = wall_thickness;
-skirt_outer = skirt_interior + (2 * skirt_wall);
+// Internal height = fan base total height + two filters
+fan_base_total_height = base_height + lip_height; // 55mm
+internal_height = fan_base_total_height + total_filter_height;
+cap_height = internal_height + wall_thickness; // add top wall thickness
 
 // Total height of entire object
-total_height = cap_height + skirt_height;
+total_height = cap_height;
 
 // Grid calculations
 usable_width = interior_width - 20;
@@ -66,7 +53,7 @@ hole_width = (usable_width - (grid_holes_x + 1) * grid_bar_width) / grid_holes_x
 hole_depth = (usable_depth - (grid_holes_y + 1) * grid_bar_width) / grid_holes_y;
 
 // Z position where grid starts
-grid_z = skirt_height + cap_height - frame_height;
+grid_z = cap_height - frame_height;
 
 $fn = 96; // Higher value for smoother curves
 
@@ -93,54 +80,19 @@ module grid_holes() {
     }
 }
 
-// Skirt with rounded corners and interior chamfer for printability
-module skirt_with_chamfer() {
-    // Outer skirt shell with rounded corners
-    difference() {
-        linear_extrude(skirt_height)
-            rounded_rect(skirt_outer, skirt_outer, skirt_corner_radius);
-
-        // Interior cutout - but leave material for chamfer at top
-        translate([0, 0, -1])
-            linear_extrude(skirt_height - skirt_chamfer + 1)
-                rounded_rect(skirt_interior, skirt_interior, skirt_corner_radius - skirt_wall);
-
-        // Chamfered transition at top of skirt (inside)
-        // Hull from skirt interior at bottom of chamfer to exterior size at top
-        translate([0, 0, skirt_height - skirt_chamfer])
-            hull() {
-                // Bottom of chamfer - skirt interior size
-                linear_extrude(0.1)
-                    rounded_rect(skirt_interior, skirt_interior, skirt_corner_radius - skirt_wall);
-                // Top of chamfer - matches exterior body size (smaller)
-                translate([0, 0, skirt_chamfer])
-                    linear_extrude(0.1)
-                        rounded_rect(exterior_width - 2*wall_thickness, exterior_depth - 2*wall_thickness, 3);
-            }
-    }
-}
-
-// Complete filter cap with rounded top edges
+// Complete filter cap with rounded top and bottom edges
 module filter_cap() {
     difference() {
-        union() {
-            // Main cap body with rounded top edges
-            translate([0, 0, skirt_height])
-                minkowski() {
-                    linear_extrude(cap_height - top_radius)
-                        rounded_rect(exterior_width - 2*top_radius, exterior_depth - 2*top_radius, 3);
-                    sphere(r = top_radius);
-                }
+        // Main cap body with rounded top and bottom edges
+        // Translate up so minkowski sphere creates rounded bottom at z=0
+        translate([0, 0, top_radius])
+            minkowski() {
+                linear_extrude(cap_height - 2*top_radius)
+                    rounded_rect(exterior_width - 2*top_radius, exterior_depth - 2*top_radius, 3);
+                sphere(r = top_radius);
+            }
 
-            // Skirt with rounded corners and chamfer
-            skirt_with_chamfer();
-        }
-
-        // Cut off the bottom expansion from minkowski on main body
-        translate([0, 0, skirt_height - top_radius - 1])
-            cube([exterior_width + 20, exterior_depth + 20, top_radius * 2 + 2], center = true);
-
-        // Interior cutout - stops below the grid section
+        // Interior cutout - goes all the way through bottom, stops below grid
         translate([0, 0, -1])
             linear_extrude(grid_z + 2)
                 square([interior_width - 10, interior_depth - 10], center = true);
@@ -157,12 +109,9 @@ filter_cap();
 echo("=== FILTER CAP DIMENSIONS ===");
 echo(str("Exterior: ", exterior_width, " x ", exterior_depth, " mm"));
 echo(str("Interior cutout: ", interior_width - 10, " x ", interior_depth - 10, " mm"));
-echo(str("Cap height: ", cap_height, " mm"));
-echo(str("Skirt height: ", skirt_height, " mm"));
+echo(str("Internal height: ", internal_height, " mm (fan base ", fan_base_total_height, " + filters ", total_filter_height, ")"));
 echo(str("Total height: ", total_height, " mm"));
-echo(str("Top edge radius: ", top_radius, " mm"));
-echo(str("Skirt corner radius: ", skirt_corner_radius, " mm"));
-echo(str("Skirt chamfer: ", skirt_chamfer, " mm"));
+echo(str("Edge radius: ", top_radius, " mm (top and bottom)"));
 echo(str("Grid: ", grid_holes_x, " x ", grid_holes_y, " holes"));
 echo("");
 echo("=== BUILD CHECK (H2D: 350x320x325) ===");

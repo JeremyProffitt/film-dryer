@@ -1,0 +1,9 @@
+# Generated output files (created by generate.bat or CI pipeline)
+output/
+
+# Preview images in root (temporary)
+preview_*.png
+
+# Temporary files
+tmpclaude-*
+*.tmp

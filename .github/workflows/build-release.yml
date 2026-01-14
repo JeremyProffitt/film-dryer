@@ -1,0 +1,128 @@
+name: Build STLs and Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenSCAD
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openscad xvfb
+
+      - name: Find SCAD files and build STLs and images
+        run: |
+          mkdir -p output/stl output/images
+
+          # Find all .scad files
+          find . -name "*.scad" -type f | while read -r scad_file; do
+            # Get the base name without extension
+            base_name=$(basename "$scad_file" .scad)
+            dir_name=$(dirname "$scad_file")
+
+            echo "Processing: $scad_file"
+
+            # Build STL
+            echo "  Building STL..."
+            xvfb-run -a openscad -o "output/stl/${base_name}.stl" "$scad_file"
+
+            # Generate 4 images from different angles
+            # Using --camera=translateX,translateY,translateZ,rotateX,rotateY,rotateZ,distance
+            # and --autocenter --viewall for automatic sizing
+
+            echo "  Rendering front view..."
+            xvfb-run -a openscad -o "output/images/${base_name}_front.png" \
+              --camera=0,0,0,90,0,0,0 \
+              --autocenter --viewall \
+              --imgsize=1024,1024 \
+              --colorscheme=Tomorrow \
+              "$scad_file"
+
+            echo "  Rendering back view..."
+            xvfb-run -a openscad -o "output/images/${base_name}_back.png" \
+              --camera=0,0,0,90,0,180,0 \
+              --autocenter --viewall \
+              --imgsize=1024,1024 \
+              --colorscheme=Tomorrow \
+              "$scad_file"
+
+            echo "  Rendering top view..."
+            xvfb-run -a openscad -o "output/images/${base_name}_top.png" \
+              --camera=0,0,0,0,0,0,0 \
+              --autocenter --viewall \
+              --imgsize=1024,1024 \
+              --colorscheme=Tomorrow \
+              "$scad_file"
+
+            echo "  Rendering isometric view..."
+            xvfb-run -a openscad -o "output/images/${base_name}_isometric.png" \
+              --camera=0,0,0,55,0,25,0 \
+              --autocenter --viewall \
+              --imgsize=1024,1024 \
+              --colorscheme=Tomorrow \
+              "$scad_file"
+
+            echo "  Done with $base_name"
+          done
+
+          # List generated files
+          echo ""
+          echo "Generated STL files:"
+          ls -la output/stl/ || echo "No STL files generated"
+          echo ""
+          echo "Generated images:"
+          ls -la output/images/ || echo "No images generated"
+
+      - name: Check for output files
+        id: check_files
+        run: |
+          if [ -n "$(ls -A output/stl/*.stl 2>/dev/null)" ]; then
+            echo "has_files=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_files=false" >> $GITHUB_OUTPUT
+            echo "No SCAD files found in repository, skipping release"
+          fi
+
+      - name: Delete existing release
+        if: steps.check_files.outputs.has_files == 'true'
+        run: |
+          gh release delete latest --yes || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create release (as draft)
+        if: steps.check_files.outputs.has_files == 'true'
+        run: |
+          # Create release as draft first
+          gh release create latest \
+            --title "Latest Build" \
+            --notes "Automated build of STL files and preview images from OpenSCAD sources.
+
+          ## Contents
+          - **STL files**: Ready-to-print 3D models
+          - **Images**: Preview renders from 4 angles (front, back, top, isometric)
+
+          Built from commit: ${{ github.sha }}" \
+            --draft \
+            output/stl/*.stl \
+            output/images/*.png
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish release (set as not draft)
+        if: steps.check_files.outputs.has_files == 'true'
+        run: |
+          gh release edit latest --draft=false
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
