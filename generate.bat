@@ -5,33 +5,42 @@ REM Output files are gitignored - GitHub Actions pipeline generates them
 set OPENSCAD="C:\Program Files\OpenSCAD\openscad.exe"
 set OUTPUT_DIR=output
 
-echo Creating output directory...
-if not exist %OUTPUT_DIR% mkdir %OUTPUT_DIR%
+echo Creating output directories...
+if not exist %OUTPUT_DIR%\stl mkdir %OUTPUT_DIR%\stl
+if not exist %OUTPUT_DIR%\images mkdir %OUTPUT_DIR%\images
+
+REM Process all SCAD files
+for %%f in (*.scad) do (
+    echo.
+    echo === Processing %%~nf ===
+
+    echo   Building STL...
+    %OPENSCAD% -o %OUTPUT_DIR%\stl\%%~nf.stl "%%f"
+
+    echo   Rendering isometric view...
+    %OPENSCAD% -o %OUTPUT_DIR%\images\%%~nf_isometric.png ^
+        --camera=0,0,0,55,0,25,0 ^
+        --autocenter --viewall ^
+        --imgsize=1024,1024 ^
+        --colorscheme=Tomorrow ^
+        "%%f"
+
+    echo   Rendering isometric flipped view...
+    %OPENSCAD% -o %OUTPUT_DIR%\images\%%~nf_isometric_flipped.png ^
+        --camera=0,0,0,55,0,205,0 ^
+        --autocenter --viewall ^
+        --imgsize=1024,1024 ^
+        --colorscheme=Tomorrow ^
+        "%%f"
+
+    echo   Done with %%~nf
+)
 
 echo.
-echo === Generating Filter Cap ===
-echo Rendering STL...
-%OPENSCAD% -o %OUTPUT_DIR%\filter_cap.stl filter_cap.scad
-echo Rendering preview image...
-%OPENSCAD% -o %OUTPUT_DIR%\filter_cap.png --autocenter --viewall --imgsize=800,600 filter_cap.scad
-echo Rendering bottom view...
-%OPENSCAD% -o %OUTPUT_DIR%\filter_cap_bottom.png --autocenter --viewall --imgsize=800,600 --camera=0,0,0,180,0,0,600 filter_cap.scad
-
+echo === Build Complete ===
 echo.
-echo === Generating Fan Base ===
-echo Rendering STL...
-%OPENSCAD% -o %OUTPUT_DIR%\fan_base.stl fan_base.scad
-echo Rendering preview image...
-%OPENSCAD% -o %OUTPUT_DIR%\fan_base.png --autocenter --viewall --imgsize=800,600 fan_base.scad
-echo Rendering top view...
-%OPENSCAD% -o %OUTPUT_DIR%\fan_base_top.png --autocenter --viewall --imgsize=800,600 --camera=0,0,0,0,0,0,600 fan_base.scad
-
+echo STL files:
+dir /b %OUTPUT_DIR%\stl\*.stl 2>nul || echo   No STL files generated
 echo.
-echo === Generating Assembly Preview ===
-echo Rendering assembly image...
-%OPENSCAD% -o %OUTPUT_DIR%\assembly.png --autocenter --viewall --imgsize=1024,768 assembly.scad
-
-echo.
-echo === Done ===
-echo Output files in %OUTPUT_DIR%\
-dir /b %OUTPUT_DIR%
+echo Image files:
+dir /b %OUTPUT_DIR%\images\*.png 2>nul || echo   No images generated
