@@ -23,9 +23,9 @@ upper_recess_inset = 45; // mm - how much smaller the upper recess is (per side)
 extra_recess_height = 10; // mm - additional height for the upper recess and cap
 
 /* [Side Vent Specifications] */
-vent_hole_height = 8; // mm - vertical height of each vent slot
+vent_hole_height = 15; // mm - height of rectangular portion of vent
 vent_holes_per_side = 10; // number of vent holes per side
-vent_hole_radius = 1.5; // mm - radius for vent hole corners
+vent_hole_radius = 1.5; // mm - radius for rounded corners
 
 /* [Base Interface] */
 // Must match fan_base.scad
@@ -63,8 +63,8 @@ upper_recess_height = frame_height - wall_thickness + extra_recess_height;
 // So: vent_hole_length = (recess_width - (N+1) * wall_thickness) / N
 vent_hole_length = (upper_recess_width - (vent_holes_per_side + 1) * wall_thickness) / vent_holes_per_side;
 
-// Side vent calculations - vents are positioned within the upper recess area
-vent_z_center = grid_z + upper_recess_height / 2;
+// Side vent calculations - vents positioned with top at top of upper recess
+vent_z_center = grid_z + upper_recess_height - vent_hole_height / 2;
 // Spacing between hole centers = hole length + gap
 vent_spacing = vent_hole_length + wall_thickness;
 
@@ -76,10 +76,33 @@ module rounded_rect(w, h, r) {
         square([w, h], center = true);
 }
 
-// Single vent hole with rounded corners - length is horizontal, height is vertical
-module vent_hole_2d() {
-    offset(r = vent_hole_radius) offset(r = -vent_hole_radius)
-        square([vent_hole_length, vent_hole_height], center = true);
+// Teardrop-shaped vent hole for printability when cap is printed upside down
+// Top half: rectangle, Bottom half: 45° triangle to point
+// Total height = vent_hole_height, width = vent_hole_length
+// flip parameter: when true, point is at top instead of bottom (for sides where rotation flips it)
+module vent_hole_2d(flip = false) {
+    half_height = vent_hole_height / 2;
+    half_width = vent_hole_length / 2;
+
+    if (flip) {
+        // Point at top, rectangle at bottom
+        polygon([
+            [-half_width, -half_height],              // bottom left (rect)
+            [half_width, -half_height],               // bottom right (rect)
+            [half_width, 0],                          // middle right (rect/triangle junction)
+            [0, half_height],                         // top point
+            [-half_width, 0]                          // middle left (rect/triangle junction)
+        ]);
+    } else {
+        // Point at bottom, rectangle at top (normal orientation)
+        polygon([
+            [-half_width, half_height],               // top left (rect)
+            [half_width, half_height],                // top right (rect)
+            [half_width, 0],                          // middle right (rect/triangle junction)
+            [0, -half_height],                        // bottom point
+            [-half_width, 0]                          // middle left (rect/triangle junction)
+        ]);
+    }
 }
 
 // Side vent holes - front and back walls (Y-normal faces)
@@ -94,10 +117,11 @@ module side_vents_front_back() {
             x_pos = -upper_recess_width/2 + wall_thickness + vent_hole_length/2 + i * vent_spacing;
             // Position at exterior wall, cut inward
             y_start = side * (exterior_depth/2 + 1);
+            // Flip teardrop for side=-1 so point faces down after rotation
             translate([x_pos, y_start, vent_z_center])
                 rotate([side * 90, 0, 0])
                     linear_extrude(vent_depth + 2)
-                        vent_hole_2d();
+                        vent_hole_2d(flip = (side == -1));
         }
     }
 }
@@ -114,11 +138,12 @@ module side_vents_left_right() {
             y_pos = -upper_recess_depth/2 + wall_thickness + vent_hole_length/2 + i * vent_spacing;
             // Position at exterior wall, cut inward
             x_start = side * (exterior_width/2 + 1);
+            // Flip teardrop for side=1 so point faces down after rotation
             translate([x_start, y_pos, vent_z_center])
                 rotate([0, side * -90, 0])
                     rotate([0, 0, 90])  // Rotate 2D shape so length runs along Y
                         linear_extrude(vent_depth + 2)
-                            vent_hole_2d();
+                            vent_hole_2d(flip = (side == 1));
         }
     }
 }
@@ -164,7 +189,7 @@ echo(str("Internal height: ", internal_height, " mm (fan base ", fan_base_total_
 echo(str("Total height: ", total_height, " mm"));
 echo(str("Edge radius: ", top_radius, " mm (top and bottom)"));
 echo(str("Side vents: ", vent_holes_per_side, " holes per side x 4 sides"));
-echo(str("Vent hole size: ", vent_hole_length, " x ", vent_hole_height, " mm (calculated)"));
+echo(str("Vent teardrop: ", vent_hole_length, " x ", vent_hole_height, " mm (pointed, self-supporting)"));
 echo(str("Total vent holes: ", vent_holes_per_side * 4));
 echo("");
 echo("=== BUILD CHECK (H2D: 350x320x325) ===");

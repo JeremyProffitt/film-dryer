@@ -7,17 +7,15 @@ A 3D printable filtered air system for film drying boxes. Designed to fit on the
 ### Base
 | Isometric | Isometric Flipped |
 |-----------|-------------------|
-| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/base_isometric.png) | ![Isometric Flipped](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/base_isometric_flipped.png) |
+| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base_isometric.png) | ![Isometric Flipped](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/fan_base_isometric_flipped.png) |
 
 ### Cap (Top Vents)
 | Isometric | Isometric Flipped |
 |-----------|-------------------|
-| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/cap_top_vents_isometric.png) | ![Isometric Flipped](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/cap_top_vents_isometric_flipped.png) |
+| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_isometric.png) | ![Isometric Flipped](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/filter_cap_isometric_flipped.png) |
 
 ### Cap (Side Vents)
-| Isometric | Isometric Flipped |
-|-----------|-------------------|
-| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/cap_side_vents_isometric.png) | ![Isometric Flipped](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/cap_side_vents_isometric_flipped.png) |
+*Images will be available after next release*
 
 ### Inside Mount
 | Isometric | Isometric Flipped |

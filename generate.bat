@@ -27,7 +27,7 @@ for %%f in (*.scad) do (
 
     echo   Rendering isometric flipped view...
     %OPENSCAD% -o %OUTPUT_DIR%\images\%%~nf_isometric_flipped.png ^
-        --camera=0,0,0,55,0,205,0 ^
+        --camera=0,0,0,125,0,205,0 ^
         --autocenter --viewall ^
         --imgsize=1024,1024 ^
         --colorscheme=Tomorrow ^
