@@ -51,7 +51,7 @@ jobs:
 
             echo "  Rendering isometric flipped view..."
             xvfb-run -a openscad -o "output/images/${base_name}_isometric_flipped.png" \
-              --camera=0,0,0,55,0,205,0 \
+              --camera=0,0,0,125,0,205,0 \
               --autocenter --viewall \
               --imgsize=1024,1024 \
               --colorscheme=Tomorrow \
