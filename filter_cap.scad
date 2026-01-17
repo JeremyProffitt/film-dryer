@@ -11,7 +11,7 @@ filter_width = 298.45; // mm
 filter_depth = 298.45; // mm
 filter_height = 19.05; // mm (0.75 inches)
 num_filters = 2; // stacked vertically
-filter_clearance = 2; // mm - gap around filters for easy insertion
+filter_clearance = 1; // mm - gap around filters for easy insertion
 
 /* [Frame Dimensions] */
 wall_thickness = 5; // mm
@@ -93,9 +93,10 @@ module filter_cap() {
             }
 
         // Interior cutout - goes all the way through bottom, stops below grid
+        // Must be full interior size to fit filters
         translate([0, 0, -1])
             linear_extrude(grid_z + 2)
-                square([interior_width - 10, interior_depth - 10], center = true);
+                square([interior_width, interior_depth], center = true);
 
         // Grid holes in top section
         grid_holes();
@@ -109,7 +110,7 @@ filter_cap();
 // Debug output
 echo("=== FILTER CAP DIMENSIONS ===");
 echo(str("Exterior: ", exterior_width, " x ", exterior_depth, " mm"));
-echo(str("Interior cutout: ", interior_width - 10, " x ", interior_depth - 10, " mm"));
+echo(str("Interior cutout: ", interior_width, " x ", interior_depth, " mm"));
 echo(str("Internal height: ", internal_height, " mm (fan base ", fan_base_total_height, " + filters ", total_filter_height, ")"));
 echo(str("Total height: ", total_height, " mm"));
 echo(str("Edge radius: ", top_radius, " mm (top and bottom)"));

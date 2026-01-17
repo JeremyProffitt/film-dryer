@@ -3,9 +3,20 @@
 // Fans sit in deep recesses and blow air downward into box
 // Designed to fit Bambu Labs H2D (max 350x320x325mm)
 
+/* [Filter Specifications] */
+// Actual filter size: 11.75" x 11.75" x 0.75"
+filter_width = 298.45; // mm
+filter_depth = 298.45; // mm
+filter_clearance = 2; // mm - gap around filters for easy insertion
+wall_thickness = 5; // mm - must match filter_cap
+
+/* [Calculated from Filter Size] */
+interior_width = filter_width + filter_clearance;
+interior_depth = filter_depth + filter_clearance;
+base_width = interior_width + (2 * wall_thickness); // mm - overall width
+base_depth = interior_depth + (2 * wall_thickness); // mm - overall depth
+
 /* [Main Dimensions] */
-base_width = 310; // mm - overall width
-base_depth = 310; // mm - overall depth
 base_height = 30; // mm - base plate thickness
 
 /* [Fan Specifications] */

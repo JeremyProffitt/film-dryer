@@ -2,9 +2,20 @@
 // Bottom plate that mounts from inside the box
 // Same footprint and mounting holes as fan_base
 
+/* [Filter Specifications] */
+// Actual filter size: 11.75" x 11.75" x 0.75"
+filter_width = 298.45; // mm
+filter_depth = 298.45; // mm
+filter_clearance = 2; // mm - gap around filters for easy insertion
+wall_thickness = 5; // mm - must match filter_cap
+
+/* [Calculated from Filter Size] */
+interior_width = filter_width + filter_clearance;
+interior_depth = filter_depth + filter_clearance;
+base_width = interior_width + (2 * wall_thickness); // mm - overall width (matches fan_base)
+base_depth = interior_depth + (2 * wall_thickness); // mm - overall depth (matches fan_base)
+
 /* [Main Dimensions] */
-base_width = 310; // mm - overall width (matches fan_base)
-base_depth = 310; // mm - overall depth (matches fan_base)
 plate_height = 10; // mm - plate thickness
 
 /* [Corner Mounting Holes] */
