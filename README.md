@@ -5,24 +5,36 @@ A 3D printable filtered air system for film drying boxes. Designed to fit on the
 ## Preview
 
 ### Base
-| Isometric | Isometric Flipped |
-|-----------|-------------------|
-| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/base_isometric.png) | ![Isometric Flipped](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/base_isometric_flipped.png) |
+
+| Front View | Rear View |
+|------------|-----------|
+| ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/base_front.png) | ![Rear](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/base_rear.png) |
+
+**Documentation**: [base.md](base.md)
 
 ### Cap (Top Vents)
-| Isometric | Isometric Flipped |
-|-----------|-------------------|
-| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/cap_top_vents_isometric.png) | ![Isometric Flipped](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/cap_top_vents_isometric_flipped.png) |
+
+| Front View | Rear View |
+|------------|-----------|
+| ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/cap_top_vents_front.png) | ![Rear](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/cap_top_vents_rear.png) |
+
+**Documentation**: [cap_top_vents.md](cap_top_vents.md)
 
 ### Cap (Side Vents)
-| Isometric | Isometric Flipped |
-|-----------|-------------------|
-| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/cap_side_vents_isometric.png) | ![Isometric Flipped](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/cap_side_vents_isometric_flipped.png) |
+
+| Front View | Rear View |
+|------------|-----------|
+| ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/cap_side_vents_front.png) | ![Rear](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/cap_side_vents_rear.png) |
+
+**Documentation**: [cap_side_vents.md](cap_side_vents.md)
 
 ### Inside Mount
-| Isometric | Isometric Flipped |
-|-----------|-------------------|
-| ![Isometric](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_isometric.png) | ![Isometric Flipped](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_isometric_flipped.png) |
+
+| Front View | Rear View |
+|------------|-----------|
+| ![Front](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_front.png) | ![Rear](https://github.com/JeremyProffitt/film-dryer/releases/download/latest/inside_mount_rear.png) |
+
+**Documentation**: [inside_mount.md](inside_mount.md)
 
 ## Overview
 

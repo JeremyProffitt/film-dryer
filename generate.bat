@@ -17,17 +17,17 @@ for %%f in (*.scad) do (
     echo   Building STL...
     %OPENSCAD% -o %OUTPUT_DIR%\stl\%%~nf.stl "%%f"
 
-    echo   Rendering isometric view...
-    %OPENSCAD% -o %OUTPUT_DIR%\images\%%~nf_isometric.png ^
-        --camera=0,0,0,55,0,25,0 ^
+    echo   Rendering front view...
+    %OPENSCAD% -o %OUTPUT_DIR%\images\%%~nf_front.png ^
+        --camera=0,0,0,55,0,45,0 ^
         --autocenter --viewall ^
         --imgsize=1024,1024 ^
         --colorscheme=Tomorrow ^
         "%%f"
 
-    echo   Rendering isometric flipped view...
-    %OPENSCAD% -o %OUTPUT_DIR%\images\%%~nf_isometric_flipped.png ^
-        --camera=0,0,0,125,0,205,0 ^
+    echo   Rendering rear view...
+    %OPENSCAD% -o %OUTPUT_DIR%\images\%%~nf_rear.png ^
+        --camera=0,0,0,55,0,225,0 ^
         --autocenter --viewall ^
         --imgsize=1024,1024 ^
         --colorscheme=Tomorrow ^

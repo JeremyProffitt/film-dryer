@@ -37,21 +37,21 @@ jobs:
             echo "  Building STL..."
             xvfb-run -a openscad -o "output/stl/${base_name}.stl" "$scad_file"
 
-            # Generate 4 images from different angles
+            # Generate front and rear images
             # Using --camera=translateX,translateY,translateZ,rotateX,rotateY,rotateZ,distance
             # and --autocenter --viewall for automatic sizing
 
-            echo "  Rendering isometric view..."
-            xvfb-run -a openscad -o "output/images/${base_name}_isometric.png" \
-              --camera=0,0,0,55,0,25,0 \
+            echo "  Rendering front view..."
+            xvfb-run -a openscad -o "output/images/${base_name}_front.png" \
+              --camera=0,0,0,55,0,45,0 \
               --autocenter --viewall \
               --imgsize=1024,1024 \
               --colorscheme=Tomorrow \
               "$scad_file"
 
-            echo "  Rendering isometric flipped view..."
-            xvfb-run -a openscad -o "output/images/${base_name}_isometric_flipped.png" \
-              --camera=0,0,0,125,0,205,0 \
+            echo "  Rendering rear view..."
+            xvfb-run -a openscad -o "output/images/${base_name}_rear.png" \
+              --camera=0,0,0,55,0,225,0 \
               --autocenter --viewall \
               --imgsize=1024,1024 \
               --colorscheme=Tomorrow \
@@ -95,7 +95,7 @@ jobs:
 
           ## Contents
           - **STL files**: Ready-to-print 3D models
-          - **Images**: Preview renders from 2 isometric angles
+          - **Images**: Preview renders from front and rear angles
 
           Built from commit: ${{ github.sha }}" \
             --draft \
